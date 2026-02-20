@@ -1,0 +1,20 @@
+[
+  {
+    "id": "flights",
+    "fields": [
+      {
+        "component": "tab",
+        "label": "Basic",
+        "name": "tab-basic"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "apiUrl",
+        "label": "API URL",
+        "description": "Optional API URL for fetching flight data. If not provided, sample data will be used."
+      }
+    ]
+  }
+]
+

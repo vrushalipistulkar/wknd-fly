@@ -255,111 +255,30 @@ function handleSearch() {
     return;
   }
   
-  // Get flight results
-  const route = `${from}-${to}`;
-  const flights = SAMPLE_FLIGHTS[route] || [];
+  // Build URL with query parameters
+  // Use current path structure - if on /web/wknd-fly/home, redirect to /web/wknd-fly/flights
+  const currentPath = window.location.pathname;
+  const pathParts = currentPath.split('/').filter(Boolean);
+  // Remove last part (e.g., 'home') and add 'flights'
+  if (pathParts.length > 0) {
+    pathParts[pathParts.length - 1] = 'flights';
+  } else {
+    pathParts.push('flights');
+  }
+  const flightsPath = '/' + pathParts.join('/');
   
-  // Display results
-  displayFlightResults(flights, from, to, date);
-}
-
-// Display flight results
-function displayFlightResults(flights, from, to, date) {
-  const resultsContainer = document.querySelector('.flight-results');
-  if (!resultsContainer) return;
-  
-  resultsContainer.innerHTML = '';
-  
-  if (flights.length === 0) {
-    const noResults = createElement('div', 'flight-no-results');
-    noResults.innerHTML = `
-      <p>No flights found for ${from} to ${to} on ${formatDate(date)}</p>
-      <p>Please try different airports or dates.</p>
-    `;
-    resultsContainer.appendChild(noResults);
-    return;
+  // Build query string
+  const params = new URLSearchParams();
+  params.set('from', from);
+  params.set('to', to);
+  if (date) {
+    params.set('date', date);
   }
   
-  // Title
-  const title = createElement('h2', 'flight-results-title');
-  const fromAirport = AIRPORTS.find((a) => a.code === from);
-  const toAirport = AIRPORTS.find((a) => a.code === to);
-  title.textContent = `One-Way connections from ${fromAirport?.city || from} to ${toAirport?.city || to}`;
-  resultsContainer.appendChild(title);
-  
-  // Disclaimer
-  const disclaimer = createElement('p', 'flight-results-disclaimer');
-  disclaimer.textContent = 'Presented fares are per passenger, including fees and taxes. Additional services and amenities may vary per flight or change in time.';
-  resultsContainer.appendChild(disclaimer);
-  
-  // Results list
-  const resultsList = createElement('div', 'flight-results-list');
-  
-  flights.forEach((flight) => {
-    const flightCard = createElement('div', 'flight-card');
-    
-    const imageContainer = createElement('div', 'flight-card-image');
-    const image = createElement('img', '');
-    image.src = flight.image;
-    image.alt = `${flight.toName} destination`;
-    imageContainer.appendChild(image);
-    
-    const detailsContainer = createElement('div', 'flight-card-details');
-    
-    const route = createElement('div', 'flight-route');
-    route.textContent = `${flight.fromName} (${flight.from}) to ${flight.toName} (${flight.to})`;
-    
-    const times = createElement('div', 'flight-times');
-    times.innerHTML = `
-      <div class="flight-time">
-        <span class="flight-airport">${flight.from}</span>
-        <span class="flight-time-value">${flight.departureTime}</span>
-      </div>
-      <div class="flight-time">
-        <span class="flight-airport">${flight.to}</span>
-        <span class="flight-time-value">${flight.arrivalTime}</span>
-      </div>
-    `;
-    
-    detailsContainer.appendChild(route);
-    detailsContainer.appendChild(times);
-    
-    const priceContainer = createElement('div', 'flight-card-price');
-    const priceClass = createElement('div', 'flight-class');
-    priceClass.textContent = flight.class;
-    
-    const price = createElement('div', 'flight-price');
-    price.textContent = `$${flight.price.toFixed(2)}`;
-    
-    const selectButton = createElement('button', 'flight-select-button', 'Select');
-    selectButton.addEventListener('click', () => {
-      handleFlightSelect(flight);
-    });
-    
-    priceContainer.appendChild(priceClass);
-    priceContainer.appendChild(price);
-    priceContainer.appendChild(selectButton);
-    
-    flightCard.appendChild(imageContainer);
-    flightCard.appendChild(detailsContainer);
-    flightCard.appendChild(priceContainer);
-    
-    resultsList.appendChild(flightCard);
-  });
-  
-  resultsContainer.appendChild(resultsList);
-  resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Redirect to flights page with query parameters
+  window.location.href = `${flightsPath}?${params.toString()}`;
 }
 
-// Handle flight selection
-function handleFlightSelect(flight) {
-  // In production, this would navigate to booking page or show booking modal
-  console.log('Selected flight:', flight);
-  alert(`Selected flight from ${flight.from} to ${flight.to} for $${flight.price.toFixed(2)}`);
-  
-  // You can add navigation or modal here
-  // window.location.href = `/book-flight?id=${flight.id}`;
-}
 
 // Close dropdowns when clicking outside
 function setupClickOutside() {
@@ -384,10 +303,6 @@ export default async function decorate(block) {
   const form = createFlightSearchForm();
   block.appendChild(form);
   
-  // Create results container
-  const resultsContainer = createElement('div', 'flight-results');
-  block.appendChild(resultsContainer);
-  
   // Setup click outside handler
   setupClickOutside();
   
@@ -410,13 +325,6 @@ export default async function decorate(block) {
   if (dateParam) {
     const dateInput = document.getElementById('flight-date');
     if (dateInput) dateInput.value = dateParam;
-  }
-  
-  // Auto-search if all parameters are present
-  if (fromParam && toParam && dateParam) {
-    setTimeout(() => {
-      handleSearch();
-    }, 100);
   }
 }
 
