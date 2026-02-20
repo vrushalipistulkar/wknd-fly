@@ -40,7 +40,6 @@
   position: relative;
   background: var(--background-color, #ffffff);
   border-radius: 8px;
-  overflow: hidden;
 }
 
 .flight-input-container.open {
@@ -56,6 +55,7 @@
   color: var(--text-color, #333);
   cursor: pointer;
   outline: none;
+  border-radius: 8px;
 }
 
 .flight-input::placeholder {
@@ -69,7 +69,7 @@
 /* Airport Dropdown */
 .airport-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: var(--background-color, #ffffff);
@@ -78,8 +78,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
-  margin-top: 4px;
+  z-index: 10000;
+  margin-top: 0;
+  min-width: 100%;
 }
 
 .airport-option {
