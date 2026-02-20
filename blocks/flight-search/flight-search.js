@@ -264,11 +264,41 @@ function handleSearch() {
   
   if (isAuthor) {
     // Author environment: /content/wknd-fly/language-masters/en/home.html
-    // Replace the page name with flights.html and add query params
+    // Get language code from path details and ensure it's in the URL
+    const pathDetails = getPathDetails();
+    const { langCode } = pathDetails;
     const pathParts = pathname.split('/');
-    // Replace last part (e.g., 'home.html') with 'flights.html'
-    pathParts[pathParts.length - 1] = 'flights.html';
-    flightsPath = pathParts.join('/');
+    const langMastersIndex = pathParts.indexOf('language-masters');
+    
+    if (langMastersIndex !== -1) {
+      // Check if language code exists after language-masters
+      const expectedLangIndex = langMastersIndex + 1;
+      const hasLanguageCode = pathParts.length > expectedLangIndex 
+        && /^[a-z]{2,3}$/i.test(pathParts[expectedLangIndex]) 
+        && !pathParts[expectedLangIndex].includes('.html');
+      
+      if (hasLanguageCode) {
+        // Path has language: /content/wknd-fly/language-masters/en/home.html
+        // Replace last part (e.g., 'home.html') with 'flights.html'
+        pathParts[pathParts.length - 1] = 'flights.html';
+        flightsPath = pathParts.join('/');
+      } else {
+        // Language code missing, insert it before the page name
+        // /content/wknd-fly/language-masters/home.html -> /content/wknd-fly/language-masters/en/flights.html
+        const languageToUse = langCode || 'en';
+        // Insert language code after language-masters
+        pathParts.splice(langMastersIndex + 1, 0, languageToUse);
+        // Replace last part with flights.html
+        pathParts[pathParts.length - 1] = 'flights.html';
+        flightsPath = pathParts.join('/');
+      }
+    } else {
+      // No language-masters found, use getPathDetails to construct path
+      // This shouldn't happen in author, but handle it
+      const languageToUse = langCode || 'en';
+      pathParts[pathParts.length - 1] = 'flights.html';
+      flightsPath = pathParts.join('/');
+    }
   } else {
     // Live site: /en/flights or /web/wknd-fly/flights
     // Get path details to extract language and structure
