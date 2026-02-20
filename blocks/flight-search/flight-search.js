@@ -1,6 +1,5 @@
 // Flight Search Block
 import { getMetadata } from '../../scripts/aem.js';
-import { getLanguage } from '../../scripts/utils.js';
 
 // Sample airport data
 const AIRPORTS = [
@@ -256,12 +255,17 @@ function handleSearch() {
     return;
   }
   
-  // Get current language code
-  const langCode = getLanguage() || 'en';
-  
   // Build URL with query parameters
-  // Redirect to /{lang}/flights?from=WAW&to=TQO&date=YYYY-MM-DD
-  const flightsPath = `/${langCode}/flights`;
+  // Use current path structure - if on /web/wknd-fly/home, redirect to /web/wknd-fly/flights
+  const currentPath = window.location.pathname;
+  const pathParts = currentPath.split('/').filter(Boolean);
+  // Remove last part (e.g., 'home') and add 'flights'
+  if (pathParts.length > 0) {
+    pathParts[pathParts.length - 1] = 'flights';
+  } else {
+    pathParts.push('flights');
+  }
+  const flightsPath = '/' + pathParts.join('/');
   
   // Build query string
   const params = new URLSearchParams();
