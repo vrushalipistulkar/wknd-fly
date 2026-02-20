@@ -1,5 +1,7 @@
 // Flight Search Block
 import { getMetadata } from '../../scripts/aem.js';
+import { isAuthorEnvironment } from '../../scripts/scripts.js';
+import { getPathDetails } from '../../scripts/utils.js';
 
 // Sample airport data
 const AIRPORTS = [
@@ -256,16 +258,43 @@ function handleSearch() {
   }
   
   // Build URL with query parameters
-  // Use current path structure - if on /web/wknd-fly/home, redirect to /web/wknd-fly/flights
-  const currentPath = window.location.pathname;
-  const pathParts = currentPath.split('/').filter(Boolean);
-  // Remove last part (e.g., 'home') and add 'flights'
-  if (pathParts.length > 0) {
-    pathParts[pathParts.length - 1] = 'flights';
+  const isAuthor = isAuthorEnvironment();
+  const { pathname } = window.location;
+  let flightsPath;
+  
+  if (isAuthor) {
+    // Author environment: /content/wknd-fly/language-masters/en/home.html
+    // Replace the page name with flights.html and add query params
+    const pathParts = pathname.split('/');
+    // Replace last part (e.g., 'home.html') with 'flights.html'
+    pathParts[pathParts.length - 1] = 'flights.html';
+    flightsPath = pathParts.join('/');
   } else {
-    pathParts.push('flights');
+    // Live site: /en/flights or /web/wknd-fly/flights
+    // Get path details to extract language and structure
+    const pathDetails = getPathDetails();
+    const { langCode, prefix } = pathDetails;
+    
+    if (langCode) {
+      // Path has language: /en/home -> /en/flights
+      // Or /web/wknd-fly/en/home -> /web/wknd-fly/en/flights
+      if (prefix) {
+        flightsPath = `${prefix}/${langCode}/flights`;
+      } else {
+        flightsPath = `/${langCode}/flights`;
+      }
+    } else {
+      // No language detected, use current path structure
+      // /web/wknd-fly/home -> /web/wknd-fly/flights
+      const pathParts = pathname.split('/').filter(Boolean);
+      if (pathParts.length > 0) {
+        pathParts[pathParts.length - 1] = 'flights';
+        flightsPath = '/' + pathParts.join('/');
+      } else {
+        flightsPath = '/flights';
+      }
+    }
   }
-  const flightsPath = '/' + pathParts.join('/');
   
   // Build query string
   const params = new URLSearchParams();
