@@ -100,75 +100,57 @@ function isVideoLink(link) {
 }
 
 export default function decorate(block) {
-  // Read column widths configuration
-  // The columnWidths field can be in a config div with data-aue-prop or as a child div
-  const readConfigValue = (fieldName) => {
-    // Try to find by data-aue-prop first (Universal Editor structure)
-    const fieldDiv = block.querySelector(`[data-aue-prop="${fieldName}"]`);
-    if (fieldDiv) {
-      const p = fieldDiv.querySelector('p');
-      if (p) return p.textContent?.trim() || '';
-      return fieldDiv.textContent?.trim() || '';
-    }
-    // Fallback: check by index (columnWidths is typically the 3rd config field after columns and rows)
-    // Structure: div:nth-child(1) = columns, div:nth-child(2) = rows, div:nth-child(3) = columnWidths
-    const configDiv = block.querySelector(':scope > div:nth-child(3) > div');
-    if (configDiv) {
-      const p = configDiv.querySelector('p');
-      return p?.textContent?.trim() || configDiv.textContent?.trim() || '';
-    }
-    return '';
-  };
-
-  const columnWidthsStr = readConfigValue('columnWidths');
-  
-  // Parse column widths (comma-separated percentages)
-  let columnWidths = null;
-  if (columnWidthsStr) {
-    const widths = columnWidthsStr.split(',').map(w => {
-      const num = parseFloat(w.trim());
-      return isNaN(num) ? null : num;
-    }).filter(w => w !== null);
-    
-    if (widths.length > 0) {
-      // Normalize to ensure they sum to 100
-      const sum = widths.reduce((a, b) => a + b, 0);
-      if (sum > 0) {
-        columnWidths = widths.map(w => (w / sum) * 100);
-      } else {
-        columnWidths = widths;
-      }
-    }
-  }
-
   const cols = [...block.firstElementChild.children];
   block.classList.add(`columns-${cols.length}-cols`);
 
   // setup image columns
   [...block.children].forEach((row) => {
-    // Skip config divs (they have data-aue-prop attributes)
-    if (row.getAttribute('data-aue-prop')) {
-      return; // This is a config field, skip it
-    }
-    
     row.classList.add('columns-row');
-    
-    // Apply custom widths if specified
-    if (columnWidths && columnWidths.length > 0) {
-      [...row.children].forEach((col, index) => {
-        if (index < columnWidths.length) {
-          const width = columnWidths[index];
-          col.style.flexBasis = `${width}%`;
-          col.style.flexGrow = '0';
-          col.style.flexShrink = '0';
-          col.style.width = `${width}%`;
-          col.setAttribute('data-column-width', width);
-        }
-      });
-    }
-    
     //const firstChild = row.querySelector(':scope > div:first-child');
     [...row.children].forEach((col) => {
+      // Read childLayout field from column
+      // Check for data-aue-prop first, then fallback to reading from column children
+      let childLayout = 'vertical'; // default
+      const layoutField = col.querySelector('[data-aue-prop="childLayout"]');
+      if (layoutField) {
+        const p = layoutField.querySelector('p');
+        const layoutValue = (p?.textContent?.trim() || layoutField.textContent?.trim() || 'vertical').toLowerCase();
+        if (layoutValue === 'horizontal' || layoutValue === 'vertical') {
+          childLayout = layoutValue;
+        }
+        // Hide the config field div
+        layoutField.style.display = 'none';
+      } else {
+        // Fallback: check all children for a div containing "horizontal" or "vertical"
+        // This handles the case where the field is stored in the block structure
+        const children = Array.from(col.children);
+        for (const child of children) {
+          const text = child.textContent?.trim().toLowerCase() || '';
+          if (text === 'horizontal' || text === 'vertical') {
+            childLayout = text;
+            // Hide the config div
+            child.style.display = 'none';
+            break;
+          }
+          // Also check for p tag inside
+          const p = child.querySelector('p');
+          if (p) {
+            const pText = p.textContent?.trim().toLowerCase() || '';
+            if (pText === 'horizontal' || pText === 'vertical') {
+              childLayout = pText;
+              // Hide the config div
+              child.style.display = 'none';
+              break;
+            }
+          }
+        }
+      }
+      
+      // Apply layout class to column
+      if (childLayout === 'horizontal') {
+        col.classList.add('columns-horizontal');
+      }
+      
       const pic = col.querySelector('picture');
       if (pic) {
         const picWrapper = pic.closest('div');

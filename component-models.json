@@ -462,14 +462,34 @@
         "name": "rows",
         "value": "",
         "label": "Rows"
+      }
+    ]
+  },
+  {
+    "id": "column",
+    "fields": [
+      {
+        "component": "tab",
+        "label": "Basic",
+        "name": "tab-basic"
       },
       {
-        "component": "text",
+        "component": "select",
+        "name": "childLayout",
+        "label": "Child Layout",
         "valueType": "string",
-        "name": "columnWidths",
-        "value": "",
-        "label": "Column Widths (Percentages)",
-        "description": "Enter comma-separated percentages for each column (e.g., '30,70' for 30% and 70%). Leave empty for equal widths."
+        "value": "vertical",
+        "description": "How child items (text, image, button, etc.) should be arranged within this column",
+        "options": [
+          {
+            "name": "Vertical",
+            "value": "vertical"
+          },
+          {
+            "name": "Horizontal",
+            "value": "horizontal"
+          }
+        ]
       }
     ]
   },
