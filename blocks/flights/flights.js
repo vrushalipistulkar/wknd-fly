@@ -342,8 +342,63 @@ function createDefaultFlightItem(block) {
   return flightItem;
 }
 
-// Ensure flight item has default values if fields are empty
+// Check if a flight item is completely empty (no data at all)
+function isFlightItemEmpty(row) {
+  // Check if any field has a value
+  const fieldOrder = ['image', 'from', 'fromName', 'to', 'toName', 'departureTime', 'arrivalTime', 'price', 'class'];
+  
+  for (const fieldName of fieldOrder) {
+    const fieldDiv = row.querySelector(`[data-aue-prop="${fieldName}"]`);
+    if (fieldDiv) {
+      const p = fieldDiv.querySelector('p');
+      const link = fieldDiv.querySelector('a');
+      const img = fieldDiv.querySelector('img');
+      const picture = fieldDiv.querySelector('picture');
+      const nestedDiv = fieldDiv.querySelector('div');
+      
+      const hasValue = (p && p.textContent?.trim()) || 
+                       (link && (link.href || link.textContent?.trim())) ||
+                       (img && (img.src || img.getAttribute('data-src'))) ||
+                       (picture && picture.querySelector('img')) ||
+                       (nestedDiv && nestedDiv.textContent?.trim()) ||
+                       (fieldDiv.textContent?.trim() && !fieldDiv.querySelector('p') && !fieldDiv.querySelector('a'));
+      
+      if (hasValue) {
+        return false; // Found at least one field with a value
+      }
+    }
+  }
+  
+  // Also check by index if no data attributes found
+  const children = Array.from(row.children);
+  for (let i = 0; i < Math.min(9, children.length); i++) {
+    const child = children[i];
+    const p = child.querySelector('p');
+    const link = child.querySelector('a');
+    const img = child.querySelector('img');
+    const picture = child.querySelector('picture');
+    
+    const hasValue = (p && p.textContent?.trim()) || 
+                     (link && (link.href || link.textContent?.trim())) ||
+                     (img && (img.src || img.getAttribute('data-src'))) ||
+                     (picture && picture.querySelector('img')) ||
+                     (child.textContent?.trim() && !p && !link);
+    
+    if (hasValue) {
+      return false; // Found at least one field with a value
+    }
+  }
+  
+  return true; // No values found, item is empty
+}
+
+// Ensure flight item has default values ONLY if it's completely empty
 function ensureDefaultValues(row) {
+  // Only populate defaults if the item is truly empty
+  if (!isFlightItemEmpty(row)) {
+    return; // Item has data, don't overwrite
+  }
+  
   const defaultValues = {
     image: 'https://t3.ftcdn.net/jpg/05/61/35/04/240_F_561350476_Oz0OHoStNdPdsiDVY6K2DQG2SqyYlSgI.jpg',
     from: 'JFK',
@@ -380,7 +435,7 @@ function ensureDefaultValues(row) {
       row.appendChild(fieldDiv);
     }
     
-    // Check if field is empty - check multiple ways
+    // Only populate if this specific field is empty
     const p = fieldDiv.querySelector('p');
     const link = fieldDiv.querySelector('a');
     const img = fieldDiv.querySelector('img');
@@ -394,7 +449,7 @@ function ensureDefaultValues(row) {
                      (nestedDiv && nestedDiv.textContent?.trim()) ||
                      (fieldDiv.textContent?.trim() && !fieldDiv.querySelector('p') && !fieldDiv.querySelector('a'));
     
-    // If empty, populate with default value
+    // Only populate if this field is empty
     if (!hasValue) {
       // Clear existing content
       fieldDiv.innerHTML = '';
@@ -417,7 +472,8 @@ function ensureDefaultValues(row) {
 
 // Process a flight item directly from the DOM structure
 function processFlightItem(row) {
-  // Ensure default values are populated first
+  // Ensure default values are populated ONLY if item is completely empty
+  // This prevents overwriting saved values on page refresh
   ensureDefaultValues(row);
   
   // Transform the row into a flight card structure while preserving UE fields
@@ -431,6 +487,21 @@ function processFlightItem(row) {
     // First try to find by data attribute
     const fieldDiv = row.querySelector(`[data-aue-prop="${fieldName}"]`);
     if (fieldDiv) {
+      // For image field, check for link, img, or picture
+      if (fieldName === 'image') {
+        const link = fieldDiv.querySelector('a');
+        if (link) return link.href || link.textContent?.trim() || '';
+        const img = fieldDiv.querySelector('img');
+        if (img) return img.src || img.getAttribute('data-src') || '';
+        const picture = fieldDiv.querySelector('picture');
+        if (picture) {
+          const picImg = picture.querySelector('img');
+          if (picImg) return picImg.src || picImg.getAttribute('data-src') || '';
+        }
+        // Fallback to text content
+        return fieldDiv.textContent?.trim() || '';
+      }
+      // For text fields
       const p = fieldDiv.querySelector('p');
       if (p) return p.textContent?.trim() || '';
       const div = fieldDiv.querySelector('div');
@@ -441,6 +512,18 @@ function processFlightItem(row) {
     const index = ['image', 'from', 'fromName', 'to', 'toName', 'departureTime', 'arrivalTime', 'price', 'class'].indexOf(fieldName);
     if (index >= 0 && originalChildren[index]) {
       const div = originalChildren[index];
+      // For image field, check for link, img, or picture
+      if (fieldName === 'image') {
+        const link = div.querySelector('a');
+        if (link) return link.href || link.textContent?.trim() || '';
+        const img = div.querySelector('img');
+        if (img) return img.src || img.getAttribute('data-src') || '';
+        const picture = div.querySelector('picture');
+        if (picture) {
+          const picImg = picture.querySelector('img');
+          if (picImg) return picImg.src || picImg.getAttribute('data-src') || '';
+        }
+      }
       const p = div.querySelector('p');
       if (p) return p.textContent?.trim() || '';
       return div.textContent?.trim() || '';
@@ -486,25 +569,19 @@ function processFlightItem(row) {
       priceEl.textContent = price ? `$${parseFloat(price).toFixed(2)}` : '$0.00';
     }
     
-    // Update image
-    const imageDiv = row.querySelector('[data-aue-prop="image"]') || originalChildren[0];
-    if (imageDiv && imageContainer) {
-      const picture = imageDiv.querySelector('picture');
-      const img = imageDiv.querySelector('img');
-      const link = imageDiv.querySelector('a');
-      const imageUrl = link?.href || link?.textContent?.trim() || img?.src || picture?.querySelector('img')?.src || imageDiv.textContent?.trim() || '';
-      
-      if (imageUrl) {
-        const existingImg = imageContainer.querySelector('img');
-        if (existingImg) {
-          existingImg.src = imageUrl;
-        } else {
-          imageContainer.innerHTML = '';
-          const newImg = createElement('img', '');
-          newImg.src = imageUrl;
-          newImg.alt = `${toName || ''} destination`;
-          imageContainer.appendChild(newImg);
-        }
+    // Update image - use readFieldValue for consistency
+    const imageUrl = readFieldValue('image');
+    if (imageUrl && imageContainer) {
+      const existingImg = imageContainer.querySelector('img');
+      if (existingImg) {
+        existingImg.src = imageUrl;
+        existingImg.alt = `${toName || ''} destination`;
+      } else {
+        imageContainer.innerHTML = '';
+        const newImg = createElement('img', '');
+        newImg.src = imageUrl;
+        newImg.alt = `${toName || ''} destination`;
+        imageContainer.appendChild(newImg);
       }
     }
     
