@@ -347,7 +347,7 @@ function processFlightItem(row) {
   // Transform the row into a flight card structure while preserving UE fields
   row.className = 'flight-card';
   
-  // Store original field divs (preserve them for UE)
+  // Store original field divs (preserve them for UE - they must stay as children)
   const originalChildren = Array.from(row.children);
   
   // Helper to read field values from preserved divs
@@ -433,12 +433,17 @@ function processFlightItem(row) {
     }
   };
   
-  // Hide original field divs but keep them in DOM for UE
+  // Hide original field divs but keep them in DOM for UE (they stay as children)
   originalChildren.forEach((child) => {
-    child.style.display = 'none';
+    // Only hide if it's a field div (has data-aue-prop or is in expected position)
+    const isFieldDiv = child.getAttribute('data-aue-prop') || 
+                      originalChildren.indexOf(child) < 9;
+    if (isFieldDiv) {
+      child.style.display = 'none';
+    }
   });
   
-  // Create display elements
+  // Create display elements (these will be added after the field divs)
   const imageContainer = createElement('div', 'flight-card-image');
   const detailsContainer = createElement('div', 'flight-card-details');
   const routeEl = createElement('div', 'flight-route');
@@ -468,7 +473,8 @@ function processFlightItem(row) {
   priceContainer.appendChild(priceEl);
   priceContainer.appendChild(selectButton);
   
-  // Assemble the card (display elements after hidden field divs)
+  // Assemble the card - add display elements AFTER the field divs (they stay as children)
+  // Field divs are already in the row, we just add display elements
   row.appendChild(imageContainer);
   row.appendChild(detailsContainer);
   row.appendChild(priceContainer);
