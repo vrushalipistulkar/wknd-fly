@@ -263,9 +263,11 @@ function createDefaultFlightItem(block) {
   flightItem.setAttribute('data-aue-type', 'component');
   
   // Create field divs in the order expected by the model
+  // Mark them as fields (not separate components) to prevent showing in content tree
   // 0: image
   const imageDiv = createElement('div', '');
   imageDiv.setAttribute('data-aue-prop', 'image');
+  imageDiv.setAttribute('data-aue-type', 'reference'); // Mark as field type
   const imageLink = createElement('a', '');
   imageLink.href = defaultFlightData.image;
   imageLink.textContent = defaultFlightData.image;
@@ -275,6 +277,7 @@ function createDefaultFlightItem(block) {
   // 1: from
   const fromDiv = createElement('div', '');
   fromDiv.setAttribute('data-aue-prop', 'from');
+  fromDiv.setAttribute('data-aue-type', 'text');
   const fromP = createElement('p', '');
   fromP.textContent = defaultFlightData.from;
   fromDiv.appendChild(fromP);
@@ -283,6 +286,7 @@ function createDefaultFlightItem(block) {
   // 2: fromName
   const fromNameDiv = createElement('div', '');
   fromNameDiv.setAttribute('data-aue-prop', 'fromName');
+  fromNameDiv.setAttribute('data-aue-type', 'text');
   const fromNameP = createElement('p', '');
   fromNameP.textContent = defaultFlightData.fromName;
   fromNameDiv.appendChild(fromNameP);
@@ -291,6 +295,7 @@ function createDefaultFlightItem(block) {
   // 3: to
   const toDiv = createElement('div', '');
   toDiv.setAttribute('data-aue-prop', 'to');
+  toDiv.setAttribute('data-aue-type', 'text');
   const toP = createElement('p', '');
   toP.textContent = defaultFlightData.to;
   toDiv.appendChild(toP);
@@ -299,6 +304,7 @@ function createDefaultFlightItem(block) {
   // 4: toName
   const toNameDiv = createElement('div', '');
   toNameDiv.setAttribute('data-aue-prop', 'toName');
+  toNameDiv.setAttribute('data-aue-type', 'text');
   const toNameP = createElement('p', '');
   toNameP.textContent = defaultFlightData.toName;
   toNameDiv.appendChild(toNameP);
@@ -307,6 +313,7 @@ function createDefaultFlightItem(block) {
   // 5: departureTime
   const departureTimeDiv = createElement('div', '');
   departureTimeDiv.setAttribute('data-aue-prop', 'departureTime');
+  departureTimeDiv.setAttribute('data-aue-type', 'text');
   const departureTimeP = createElement('p', '');
   departureTimeP.textContent = defaultFlightData.departureTime;
   departureTimeDiv.appendChild(departureTimeP);
@@ -315,6 +322,7 @@ function createDefaultFlightItem(block) {
   // 6: arrivalTime
   const arrivalTimeDiv = createElement('div', '');
   arrivalTimeDiv.setAttribute('data-aue-prop', 'arrivalTime');
+  arrivalTimeDiv.setAttribute('data-aue-type', 'text');
   const arrivalTimeP = createElement('p', '');
   arrivalTimeP.textContent = defaultFlightData.arrivalTime;
   arrivalTimeDiv.appendChild(arrivalTimeP);
@@ -323,6 +331,7 @@ function createDefaultFlightItem(block) {
   // 7: price
   const priceDiv = createElement('div', '');
   priceDiv.setAttribute('data-aue-prop', 'price');
+  priceDiv.setAttribute('data-aue-type', 'text');
   const priceP = createElement('p', '');
   priceP.textContent = defaultFlightData.price.toString();
   priceDiv.appendChild(priceP);
@@ -331,6 +340,7 @@ function createDefaultFlightItem(block) {
   // 8: class
   const classDiv = createElement('div', '');
   classDiv.setAttribute('data-aue-prop', 'class');
+  classDiv.setAttribute('data-aue-type', 'text');
   const classP = createElement('p', '');
   classP.textContent = defaultFlightData.class;
   classDiv.appendChild(classP);
@@ -447,7 +457,22 @@ function ensureDefaultValues(row) {
     if (!fieldDiv) {
       fieldDiv = createElement('div', '');
       fieldDiv.setAttribute('data-aue-prop', fieldName);
+      // Set appropriate data-aue-type based on field type
+      if (fieldName === 'image') {
+        fieldDiv.setAttribute('data-aue-type', 'reference');
+      } else {
+        fieldDiv.setAttribute('data-aue-type', 'text');
+      }
       row.appendChild(fieldDiv);
+    } else {
+      // Ensure existing field divs have proper data-aue-type
+      if (!fieldDiv.getAttribute('data-aue-type')) {
+        if (fieldName === 'image') {
+          fieldDiv.setAttribute('data-aue-type', 'reference');
+        } else {
+          fieldDiv.setAttribute('data-aue-type', 'text');
+        }
+      }
     }
     
     // Only populate if this specific field is empty
@@ -660,6 +685,15 @@ function processFlightItem(row) {
     if (isFieldDiv) {
       child.style.display = 'none';
       child.setAttribute('data-aue-hidden', 'true'); // Mark as hidden for UE
+      // Ensure field divs have proper data-aue-type (not component)
+      if (!child.getAttribute('data-aue-type')) {
+        const propName = child.getAttribute('data-aue-prop');
+        if (propName === 'image') {
+          child.setAttribute('data-aue-type', 'reference');
+        } else {
+          child.setAttribute('data-aue-type', 'text');
+        }
+      }
     }
   });
   
