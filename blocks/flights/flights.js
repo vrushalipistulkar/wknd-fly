@@ -344,24 +344,30 @@ function createDefaultFlightItem(block) {
 
 // Check if a flight item is completely empty (no data at all)
 function isFlightItemEmpty(row) {
-  // Check if any field has a value
+  // First check: if row has data-aue-model="flight", it's a flight item
+  // If it doesn't have this attribute, it might not be a flight item yet
+  const hasModel = row.getAttribute('data-aue-model') === 'flight';
+  
+  // Check if any field has a value - be more lenient in detection
   const fieldOrder = ['image', 'from', 'fromName', 'to', 'toName', 'departureTime', 'arrivalTime', 'price', 'class'];
   
   for (const fieldName of fieldOrder) {
     const fieldDiv = row.querySelector(`[data-aue-prop="${fieldName}"]`);
     if (fieldDiv) {
+      // Check all possible ways a value could be stored
       const p = fieldDiv.querySelector('p');
       const link = fieldDiv.querySelector('a');
       const img = fieldDiv.querySelector('img');
       const picture = fieldDiv.querySelector('picture');
-      const nestedDiv = fieldDiv.querySelector('div');
+      const nestedDiv = fieldDiv.querySelector('div:not([data-aue-prop])');
       
-      const hasValue = (p && p.textContent?.trim()) || 
-                       (link && (link.href || link.textContent?.trim())) ||
-                       (img && (img.src || img.getAttribute('data-src'))) ||
+      // More comprehensive value detection
+      const hasValue = (p && p.textContent && p.textContent.trim() !== '') || 
+                       (link && ((link.href && link.href.trim() !== '') || (link.textContent && link.textContent.trim() !== ''))) ||
+                       (img && ((img.src && img.src.trim() !== '') || (img.getAttribute('data-src') && img.getAttribute('data-src').trim() !== ''))) ||
                        (picture && picture.querySelector('img')) ||
-                       (nestedDiv && nestedDiv.textContent?.trim()) ||
-                       (fieldDiv.textContent?.trim() && !fieldDiv.querySelector('p') && !fieldDiv.querySelector('a'));
+                       (nestedDiv && nestedDiv.textContent && nestedDiv.textContent.trim() !== '') ||
+                       (fieldDiv.textContent && fieldDiv.textContent.trim() !== '' && !fieldDiv.querySelector('p') && !fieldDiv.querySelector('a') && !fieldDiv.querySelector('img'));
       
       if (hasValue) {
         return false; // Found at least one field with a value
@@ -373,23 +379,32 @@ function isFlightItemEmpty(row) {
   const children = Array.from(row.children);
   for (let i = 0; i < Math.min(9, children.length); i++) {
     const child = children[i];
+    // Skip if it's a display element (not a field div)
+    if (child.classList.contains('flight-card-image') || 
+        child.classList.contains('flight-card-details') || 
+        child.classList.contains('flight-card-price')) {
+      continue;
+    }
+    
     const p = child.querySelector('p');
     const link = child.querySelector('a');
     const img = child.querySelector('img');
     const picture = child.querySelector('picture');
     
-    const hasValue = (p && p.textContent?.trim()) || 
-                     (link && (link.href || link.textContent?.trim())) ||
-                     (img && (img.src || img.getAttribute('data-src'))) ||
+    const hasValue = (p && p.textContent && p.textContent.trim() !== '') || 
+                     (link && ((link.href && link.href.trim() !== '') || (link.textContent && link.textContent.trim() !== ''))) ||
+                     (img && ((img.src && img.src.trim() !== '') || (img.getAttribute('data-src') && img.getAttribute('data-src').trim() !== ''))) ||
                      (picture && picture.querySelector('img')) ||
-                     (child.textContent?.trim() && !p && !link);
+                     (child.textContent && child.textContent.trim() !== '' && !p && !link && !img);
     
     if (hasValue) {
       return false; // Found at least one field with a value
     }
   }
   
-  return true; // No values found, item is empty
+  // If it has the model attribute but no values, it's a new empty item
+  // If it doesn't have the model attribute, it might not be a flight item
+  return hasModel; // Only consider empty if it's marked as a flight item
 }
 
 // Ensure flight item has default values ONLY if it's completely empty
@@ -472,6 +487,16 @@ function ensureDefaultValues(row) {
 
 // Process a flight item directly from the DOM structure
 function processFlightItem(row) {
+  // Skip if already processed (has display elements)
+  if (row.classList.contains('flight-card') && 
+      (row.querySelector('.flight-card-image') || row.querySelector('.flight-card-details'))) {
+    // Already processed, just update display
+    if (row._updateDisplay) {
+      row._updateDisplay();
+    }
+    return;
+  }
+  
   // Ensure default values are populated ONLY if item is completely empty
   // This prevents overwriting saved values on page refresh
   ensureDefaultValues(row);
@@ -803,8 +828,18 @@ export default async function decorate(block) {
   block.className = 'flights';
   
   // Hide config divs but keep them for Universal Editor
+  // Only hide if they have data-aue-prop attributes matching the flights block model
   Array.from(block.children).forEach((child, index) => {
-    if (index >= 0 && index < 7) {
+    // Check if this is a config field (flights block model fields)
+    const isConfigField = child.getAttribute('data-aue-prop') === 'title' ||
+                         child.getAttribute('data-aue-prop') === 'subtitle' ||
+                         child.getAttribute('data-aue-prop') === 'defaultFrom' ||
+                         child.getAttribute('data-aue-prop') === 'defaultTo' ||
+                         child.getAttribute('data-aue-prop') === 'defaultDate' ||
+                         child.getAttribute('data-aue-prop') === 'apiUrl' ||
+                         child.getAttribute('data-aue-prop') === 'flightImages' ||
+                         (index < 7 && !child.getAttribute('data-aue-model')); // First 7 children without flight model are config
+    if (isConfigField) {
       child.style.display = 'none';
     }
   });
@@ -825,23 +860,29 @@ export default async function decorate(block) {
   // Find flight items (starting from index 7, after config divs)
   for (let i = 7; i < children.length; i++) {
     const child = children[i];
+    
+    // Skip if it's a display element (already processed)
+    if (child.classList.contains('flight-results-header') || 
+        child.classList.contains('flight-results-disclaimer') ||
+        child.classList.contains('flight-results-list')) {
+      continue;
+    }
+    
     // Check if this child is a flight item
-    const hasFlightModel = child.getAttribute('data-aue-model') === 'flight' || 
-                          child.querySelector('[data-aue-model="flight"]');
-    const hasFlightFields = child.children.length >= 9;
+    const hasFlightModel = child.getAttribute('data-aue-model') === 'flight';
     const hasFlightData = child.querySelector('[data-aue-prop="from"]') || 
                          child.querySelector('[data-aue-prop="to"]');
     
-    // If it has the flight model attribute, it's definitely a flight item
-    // Even if fields are missing, we'll create them with defaults
-    if (hasFlightModel || hasFlightFields || hasFlightData) {
+    // Only process if it's explicitly marked as a flight item OR has flight data fields
+    // Don't process based on child count alone as config fields might match
+    if (hasFlightModel || hasFlightData) {
       // Ensure it has the model attribute for UE
       if (!child.getAttribute('data-aue-model')) {
         child.setAttribute('data-aue-model', 'flight');
         child.setAttribute('data-aue-type', 'component');
       }
       
-      // This is a flight item - process it directly (which will ensure defaults)
+      // This is a flight item - process it directly (which will ensure defaults only if empty)
       processFlightItem(child);
       flightItems.push(child);
     }
