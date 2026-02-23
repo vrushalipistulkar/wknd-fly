@@ -54,11 +54,6 @@
     flex: 1;
     order: unset;
   }
-  
-  /* Custom column widths - override flex: 1 when width is specified */
-  .columns > div > div[data-column-width] {
-    flex: 0 0 auto;
-  }
 }
 
 

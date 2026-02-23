@@ -540,6 +540,14 @@ function processFlightItem(row) {
   
   // Helper to read field values from preserved divs - always reads fresh from DOM
   const readFieldValue = (fieldName) => {
+    // Special handling for image field - check for img tag with data-aue-prop directly
+    if (fieldName === 'image') {
+      const imgWithProp = row.querySelector(`img[data-aue-prop="${fieldName}"]`);
+      if (imgWithProp && (imgWithProp.src || imgWithProp.getAttribute('data-src'))) {
+        return imgWithProp.src || imgWithProp.getAttribute('data-src') || '';
+      }
+    }
+    
     // Always query fresh from the row to get current values
     // First try to find by data attribute - check both div and p tags
     let fieldElement = row.querySelector(`[data-aue-prop="${fieldName}"]`);
@@ -583,19 +591,27 @@ function processFlightItem(row) {
     if (fieldElement) {
       // For image field, check for link, img, or picture
       if (fieldName === 'image') {
-        const link = fieldElement.querySelector('a');
-        if (link && (link.href || link.textContent?.trim())) {
-          return link.href || link.textContent?.trim() || '';
+        // Check for picture > img (most common structure from AEM)
+        const picture = fieldElement.querySelector('picture');
+        if (picture) {
+          const picImg = picture.querySelector('img');
+          if (picImg && (picImg.src || picImg.getAttribute('data-src'))) {
+            return picImg.src || picImg.getAttribute('data-src') || '';
+          }
         }
+        
+        // Check for direct img tag
         const img = fieldElement.querySelector('img');
         if (img && (img.src || img.getAttribute('data-src'))) {
           return img.src || img.getAttribute('data-src') || '';
         }
-        const picture = fieldElement.querySelector('picture');
-        if (picture) {
-          const picImg = picture.querySelector('img');
-          if (picImg) return picImg.src || picImg.getAttribute('data-src') || '';
+        
+        // Check for link
+        const link = fieldElement.querySelector('a');
+        if (link && (link.href || link.textContent?.trim())) {
+          return link.href || link.textContent?.trim() || '';
         }
+        
         // Fallback to text content
         return fieldElement.textContent?.trim() || '';
       }
