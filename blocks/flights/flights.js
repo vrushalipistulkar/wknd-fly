@@ -225,77 +225,140 @@ function handleFlightSelect(flight) {
   // window.location.href = `/book-flight?id=${flight.id}`;
 }
 
+// Read flight item from a block child (row)
+function readFlightItem(row) {
+  // Each flight item has fields in this order:
+  // 0: image (reference - link or img)
+  // 1: from (text)
+  // 2: fromName (text)
+  // 3: to (text)
+  // 4: toName (text)
+  // 5: departureTime (text)
+  // 6: arrivalTime (text)
+  // 7: price (text)
+  // 8: class (text)
+  
+  const readField = (index) => {
+    const div = row.querySelector(`:scope > div:nth-child(${index + 1}) > div`);
+    return div?.textContent?.trim() || '';
+  };
+  
+  // Read image - can be a link, img tag, or picture element
+  const imageDiv = row.querySelector(':scope > div:nth-child(1)');
+  let imageUrl = '';
+  if (imageDiv) {
+    // Check for picture > img
+    const picture = imageDiv.querySelector('picture');
+    if (picture) {
+      const img = picture.querySelector('img');
+      if (img) {
+        imageUrl = img.src || img.getAttribute('data-src') || '';
+      }
+    } else {
+      // Check for direct img tag
+      const img = imageDiv.querySelector('img');
+      if (img) {
+        imageUrl = img.src || img.getAttribute('data-src') || '';
+      } else {
+        // Check for link
+        const link = imageDiv.querySelector('a');
+        if (link) {
+          imageUrl = link.href || link.textContent?.trim() || '';
+        } else {
+          // Check for text content (path)
+          const div = imageDiv.querySelector('div');
+          const text = div?.textContent?.trim() || imageDiv.textContent?.trim() || '';
+          if (text) {
+            imageUrl = text;
+          }
+        }
+      }
+    }
+  }
+  
+  const flight = {
+    id: `flight-${Date.now()}-${Math.random()}`,
+    image: imageUrl,
+    from: readField(1),
+    fromName: readField(2),
+    to: readField(3),
+    toName: readField(4),
+    departureTime: readField(5),
+    arrivalTime: readField(6),
+    price: parseFloat(readField(7)) || 0,
+    class: readField(8),
+  };
+  
+  // Only return flight if it has required fields
+  if (flight.from && flight.to) {
+    return flight;
+  }
+  return null;
+}
+
 // Main decorate function
 export default async function decorate(block) {
-  // Read configuration from block children (authorable fields)
-  // Block structure: each field is in a div > div > p structure
+  block.className = 'flights';
+  
+  // Read block-level config (title, subtitle) from first 2 children
   const readConfigValue = (index) => {
     const div = block.querySelector(`:scope > div:nth-child(${index}) > div`);
     return div?.textContent?.trim() || '';
   };
   
-  // Read all authorable fields
-  // For multi-reference fields like images, read all links/anchors
-  const readImageReferences = () => {
-    const imageDiv = block.querySelector(':scope > div:nth-child(7)');
-    if (!imageDiv) return [];
-    const links = imageDiv.querySelectorAll('a');
-    return Array.from(links).map(link => link.href || link.textContent?.trim()).filter(Boolean);
-  };
-  
   const config = {
     title: readConfigValue(1),
     subtitle: readConfigValue(2),
-    defaultFrom: readConfigValue(3),
-    defaultTo: readConfigValue(4),
-    defaultDate: readConfigValue(5),
-    apiUrl: readConfigValue(6),
-    flightImages: readImageReferences(),
   };
   
-  // Get URL parameters (priority over authorable fields)
-  const urlParams = new URLSearchParams(window.location.search);
-  const from = urlParams.get('from') || config.defaultFrom;
-  const to = urlParams.get('to') || config.defaultTo;
-  const date = urlParams.get('date') || config.defaultDate;
+  // Read flight items from remaining children (starting from index 3)
+  // Each child is a flight item
+  const flightItems = [];
+  const children = Array.from(block.children);
   
-  // Preserve block structure for authoring
-  block.className = 'flights';
-  
-  // If no from/to values (neither URL params nor authorable), show message
-  if (!from || !to) {
-    // Hide config divs but keep them for Universal Editor
-    Array.from(block.children).forEach((child, index) => {
-      if (index >= 0 && index < 7) {
-        child.style.display = 'none';
-      }
-    });
+  // Skip first 2 children (title, subtitle config) and read flight items
+  for (let i = 2; i < children.length; i++) {
+    const child = children[i];
+    // Check if this child has flight item structure (has data-aue-model="flight" or is a flight item)
+    const isFlightItem = child.getAttribute('data-aue-model') === 'flight' || 
+                         child.querySelector('[data-aue-model="flight"]') ||
+                         child.children.length >= 9; // Flight items have at least 9 fields
     
-    const noParams = createElement('div', 'flight-no-results');
-    noParams.innerHTML = `
-      <p>Please provide flight search parameters.</p>
-      <p>Use the flight search form to find flights, or configure default values in the block settings.</p>
-      <a href="/" class="flight-back-link">← Back to Search</a>
-    `;
-    block.appendChild(noParams);
-    return;
-  }
-  
-  // Hide config divs but keep them for Universal Editor
-  Array.from(block.children).forEach((child, index) => {
-    if (index >= 0 && index < 7) {
+    if (isFlightItem) {
+      const flight = readFlightItem(child);
+      if (flight) {
+        flightItems.push(flight);
+      }
+      // Hide the config div but keep it for Universal Editor
       child.style.display = 'none';
     }
-  });
+  }
   
-  // Get flight results based on route
-  const route = `${from}-${to}`;
-  let flights = SAMPLE_FLIGHTS[route] || [];
+  // Hide config divs (title, subtitle) but keep them for Universal Editor
+  if (children[0]) children[0].style.display = 'none';
+  if (children[1]) children[1].style.display = 'none';
   
-  // If API URL is provided, fetch from API (future enhancement)
-  // For now, use sample data
+  // Get URL parameters for optional filtering
+  const urlParams = new URLSearchParams(window.location.search);
+  const filterFrom = urlParams.get('from');
+  const filterTo = urlParams.get('to');
+  const date = urlParams.get('date');
   
-  // Display results with config
+  // Filter flights by URL parameters if provided
+  let flights = flightItems;
+  if (filterFrom || filterTo) {
+    flights = flightItems.filter(flight => {
+      const matchesFrom = !filterFrom || flight.from.toUpperCase() === filterFrom.toUpperCase();
+      const matchesTo = !filterTo || flight.to.toUpperCase() === filterTo.toUpperCase();
+      return matchesFrom && matchesTo;
+    });
+  }
+  
+  // Determine from/to for display (use first flight or URL params)
+  const from = filterFrom || flights[0]?.from || '';
+  const to = filterTo || flights[0]?.to || '';
+  
+  // Display results
   displayFlightResults(flights, from, to, date, config);
 }
 
