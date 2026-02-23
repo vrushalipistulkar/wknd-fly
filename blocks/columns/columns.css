@@ -22,6 +22,38 @@
   order: 1;
 }
 
+/* Horizontal layout for column children - children align horizontally */
+.columns > div > div.columns-horizontal {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.columns > div > div.columns-horizontal > * {
+  flex: 0 1 auto;
+}
+
+/* Ensure horizontal layout works in responsive view */
+@media (width >= 900px) {
+  .columns > div > div.columns-horizontal {
+    flex-wrap: nowrap;
+  }
+}
+
+/* On mobile, horizontal columns may wrap */
+@media (width < 900px) {
+  .columns > div > div.columns-horizontal {
+    flex-wrap: wrap;
+  }
+  
+  .columns > div > div.columns-horizontal > * {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
 .columns > div > .columns-img-col {
   order: 0;
 }
@@ -53,6 +85,11 @@
   .columns > div > div {
     flex: 1;
     order: unset;
+  }
+  
+  /* Override flex for horizontal layout columns */
+  .columns > div > div.columns-horizontal {
+    flex: 1;
   }
 }
 
