@@ -342,12 +342,15 @@ function createDefaultFlightItem(block) {
   return flightItem;
 }
 
-// Process a flight item directly from the DOM structure
+// Process a flight item directly from the DOM structure (preserves UE connection)
 function processFlightItem(row) {
-  // Transform the row into a flight card structure
+  // Transform the row into a flight card structure while preserving UE attributes
   row.className = 'flight-card';
   
-  // Read field values
+  // Store original children and their UE attributes
+  const originalChildren = Array.from(row.children);
+  
+  // Read field values from original structure
   const readFieldValue = (fieldName) => {
     const fieldDiv = row.querySelector(`[data-aue-prop="${fieldName}"]`);
     if (fieldDiv) {
@@ -359,18 +362,16 @@ function processFlightItem(row) {
     }
     // Fallback to index-based
     const index = ['image', 'from', 'fromName', 'to', 'toName', 'departureTime', 'arrivalTime', 'price', 'class'].indexOf(fieldName);
-    if (index >= 0) {
-      const div = row.querySelector(`:scope > div:nth-child(${index + 1})`);
-      if (div) {
-        const p = div.querySelector('p');
-        if (p) return p.textContent?.trim() || '';
-        return div.textContent?.trim() || '';
-      }
+    if (index >= 0 && originalChildren[index]) {
+      const div = originalChildren[index];
+      const p = div.querySelector('p');
+      if (p) return p.textContent?.trim() || '';
+      return div.textContent?.trim() || '';
     }
     return '';
   };
   
-  // Get field values
+  // Get current field values for display
   const from = readFieldValue('from');
   const fromName = readFieldValue('fromName');
   const to = readFieldValue('to');
@@ -380,20 +381,16 @@ function processFlightItem(row) {
   const price = readFieldValue('price');
   const flightClass = readFieldValue('class');
   
-  // Get image
+  // Get image div (preserve it)
   let imageDiv = row.querySelector('[data-aue-prop="image"]');
   if (!imageDiv) {
-    imageDiv = row.querySelector(':scope > div:nth-child(1)');
+    imageDiv = originalChildren[0];
   }
   
-  // Clear and rebuild the structure
-  const originalChildren = Array.from(row.children);
-  row.innerHTML = '';
-  
-  // Create image container
+  // Create wrapper structure but preserve original field divs
   const imageContainer = createElement('div', 'flight-card-image');
   if (imageDiv) {
-    // Try to preserve the image structure
+    // Clone image for display but keep original in DOM for UE
     const picture = imageDiv.querySelector('picture');
     const img = imageDiv.querySelector('img');
     const link = imageDiv.querySelector('a');
@@ -401,63 +398,89 @@ function processFlightItem(row) {
     if (picture) {
       imageContainer.appendChild(picture.cloneNode(true));
     } else if (img) {
-      const newImg = img.cloneNode(true);
-      imageContainer.appendChild(newImg);
+      const displayImg = img.cloneNode(true);
+      imageContainer.appendChild(displayImg);
     } else if (link) {
-      const newLink = link.cloneNode(true);
-      imageContainer.appendChild(newLink);
+      const imageUrl = link.href || link.textContent?.trim() || '';
+      if (imageUrl) {
+        const displayImg = createElement('img', '');
+        displayImg.src = imageUrl;
+        displayImg.alt = `${toName || ''} destination`;
+        imageContainer.appendChild(displayImg);
+      }
     } else {
-      // Create image from URL if available
+      // Get image URL from text content
       const imageUrl = imageDiv.textContent?.trim() || imageDiv.querySelector('div')?.textContent?.trim() || '';
       if (imageUrl) {
-        const newImg = createElement('img', '');
-        newImg.src = imageUrl;
-        newImg.alt = `${toName} destination`;
-        imageContainer.appendChild(newImg);
+        const displayImg = createElement('img', '');
+        displayImg.src = imageUrl;
+        displayImg.alt = `${toName || ''} destination`;
+        imageContainer.appendChild(displayImg);
       }
     }
   }
   
-  // Create details container
+  // Create details container with live data that updates from fields
   const detailsContainer = createElement('div', 'flight-card-details');
   
+  // Create route display that reads from fields
   const route = createElement('div', 'flight-route');
-  route.textContent = `${fromName || ''} (${from || ''}) to ${toName || ''} (${to || ''})`;
+  const updateRoute = () => {
+    const f = readFieldValue('from');
+    const fn = readFieldValue('fromName');
+    const t = readFieldValue('to');
+    const tn = readFieldValue('toName');
+    route.textContent = `${fn || ''} (${f || ''}) to ${tn || ''} (${t || ''})`;
+  };
+  updateRoute();
   
+  // Create times display that reads from fields
   const times = createElement('div', 'flight-times');
-  times.innerHTML = `
-    <div class="flight-time">
-      <span class="flight-airport">${from || ''}</span>
-      <span class="flight-time-value">${departureTime || ''}</span>
-    </div>
-    <div class="flight-time">
-      <span class="flight-airport">${to || ''}</span>
-      <span class="flight-time-value">${arrivalTime || ''}</span>
-    </div>
-  `;
+  const updateTimes = () => {
+    const f = readFieldValue('from');
+    const dt = readFieldValue('departureTime');
+    const t = readFieldValue('to');
+    const at = readFieldValue('arrivalTime');
+    times.innerHTML = `
+      <div class="flight-time">
+        <span class="flight-airport">${f || ''}</span>
+        <span class="flight-time-value">${dt || ''}</span>
+      </div>
+      <div class="flight-time">
+        <span class="flight-airport">${t || ''}</span>
+        <span class="flight-time-value">${at || ''}</span>
+      </div>
+    `;
+  };
+  updateTimes();
   
   detailsContainer.appendChild(route);
   detailsContainer.appendChild(times);
   
-  // Create price container
+  // Create price container with live data
   const priceContainer = createElement('div', 'flight-card-price');
   const priceClass = createElement('div', 'flight-class');
-  priceClass.textContent = flightClass || 'Standard';
-  
   const priceEl = createElement('div', 'flight-price');
-  priceEl.textContent = price ? `$${parseFloat(price).toFixed(2)}` : '$0.00';
+  
+  const updatePrice = () => {
+    const p = readFieldValue('price');
+    const fc = readFieldValue('class');
+    priceClass.textContent = fc || 'Standard';
+    priceEl.textContent = p ? `$${parseFloat(p).toFixed(2)}` : '$0.00';
+  };
+  updatePrice();
   
   const selectButton = createElement('button', 'flight-select-button', 'Select');
   selectButton.addEventListener('click', () => {
     handleFlightSelect({
-      from,
-      to,
-      fromName,
-      toName,
-      departureTime,
-      arrivalTime,
-      price: parseFloat(price) || 0,
-      class: flightClass
+      from: readFieldValue('from'),
+      to: readFieldValue('to'),
+      fromName: readFieldValue('fromName'),
+      toName: readFieldValue('toName'),
+      departureTime: readFieldValue('departureTime'),
+      arrivalTime: readFieldValue('arrivalTime'),
+      price: parseFloat(readFieldValue('price')) || 0,
+      class: readFieldValue('class')
     });
   });
   
@@ -465,10 +488,61 @@ function processFlightItem(row) {
   priceContainer.appendChild(priceEl);
   priceContainer.appendChild(selectButton);
   
-  // Assemble the card
+  // Hide original field divs but keep them in DOM for UE (preserve data-aue-prop attributes)
+  originalChildren.forEach((child) => {
+    // Keep all field divs in the DOM but hide them - UE needs them to read/write
+    child.style.display = 'none';
+    // Ensure they stay in the row
+    if (!row.contains(child)) {
+      row.appendChild(child);
+    }
+  });
+  
+  // Assemble the card - add display elements after the hidden field divs
   row.appendChild(imageContainer);
   row.appendChild(detailsContainer);
   row.appendChild(priceContainer);
+  
+  // Set up MutationObserver to update display when UE changes fields
+  const observer = new MutationObserver(() => {
+    updateRoute();
+    updateTimes();
+    updatePrice();
+    // Also update image if it changes
+    if (imageDiv) {
+      const picture = imageDiv.querySelector('picture');
+      const img = imageDiv.querySelector('img');
+      const link = imageDiv.querySelector('a');
+      const imageUrl = link?.href || link?.textContent?.trim() || img?.src || picture?.querySelector('img')?.src || imageDiv.textContent?.trim() || '';
+      
+      if (imageUrl && imageContainer) {
+        const existingImg = imageContainer.querySelector('img');
+        if (existingImg && existingImg.src !== imageUrl) {
+          existingImg.src = imageUrl;
+        } else if (!existingImg) {
+          const newImg = createElement('img', '');
+          newImg.src = imageUrl;
+          newImg.alt = `${toName || ''} destination`;
+          imageContainer.innerHTML = '';
+          imageContainer.appendChild(newImg);
+        }
+      }
+    }
+  });
+  
+  // Observe all field divs for changes
+  originalChildren.forEach(child => {
+    if (child) {
+      observer.observe(child, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+    }
+  });
+  
+  // Store observer on the row so it persists
+  row._flightObserver = observer;
 }
 
 // Read flight item from a block child (row)
