@@ -100,11 +100,11 @@ function isVideoLink(link) {
 }
 
 export default function decorate(block) {
-  // Read column widths from block configuration
-  // Config fields are in the first few children: columns, rows, columnWidths
+  // Read column widths from block configuration (following flights block pattern)
+  // Config fields are in div > div structure: columns, rows, columnWidths
   const readConfigValue = (index) => {
-    const configDiv = block.querySelector(`:scope > div:nth-child(${index}) > div`);
-    return configDiv?.textContent?.trim() || '';
+    const div = block.querySelector(`:scope > div:nth-child(${index}) > div`);
+    return div?.textContent?.trim() || '';
   };
 
   const columnWidthsStr = readConfigValue(3); // Third config field (after columns and rows)
@@ -125,23 +125,40 @@ export default function decorate(block) {
   }
 
   // Hide config divs but keep them for Universal Editor
-  for (let i = 1; i <= 3; i++) {
-    const configDiv = block.querySelector(`:scope > div:nth-child(${i})`);
-    if (configDiv) {
-      configDiv.style.display = 'none';
+  Array.from(block.children).forEach((child, index) => {
+    // Check if this is a config field (has data-aue-prop matching columns model fields)
+    const isConfigField = child.getAttribute('data-aue-prop') === 'columns' ||
+                         child.getAttribute('data-aue-prop') === 'rows' ||
+                         child.getAttribute('data-aue-prop') === 'columnWidths';
+    if (isConfigField) {
+      child.style.display = 'none';
     }
-  }
+  });
 
-  // Find the first row to determine column count
-  const firstRow = block.querySelector(':scope > div:nth-child(4)') || block.firstElementChild;
-  const cols = firstRow ? [...firstRow.children] : [];
+  // Find first actual row (skip config divs)
+  let firstRow = null;
+  Array.from(block.children).forEach((child) => {
+    if (!firstRow && child.style.display !== 'none' && child.children.length > 0) {
+      // Check if this looks like a row (has multiple children or contains column content)
+      const hasColumnContent = child.querySelector('picture') || 
+                              child.querySelector('img') || 
+                              child.querySelector('p') ||
+                              child.children.length > 1;
+      if (hasColumnContent) {
+        firstRow = child;
+      }
+    }
+  });
+
+  // Fallback to original approach if no config fields found
+  const cols = firstRow ? [...firstRow.children] : [...block.firstElementChild.children];
   block.classList.add(`columns-${cols.length}-cols`);
 
   // setup image columns
-  [...block.children].forEach((row, rowIndex) => {
-    // Skip config divs (first 3 children are config fields)
-    if (rowIndex < 3) {
-      return; // Already hidden above
+  [...block.children].forEach((row) => {
+    // Skip config divs (hidden ones)
+    if (row.style.display === 'none') {
+      return;
     }
     
     row.classList.add('columns-row');
