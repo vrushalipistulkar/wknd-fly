@@ -466,34 +466,6 @@
     ]
   },
   {
-    "id": "column",
-    "fields": [
-      {
-        "component": "tab",
-        "label": "Basic",
-        "name": "tab-basic"
-      },
-      {
-        "component": "select",
-        "name": "childLayout",
-        "label": "Child Layout",
-        "valueType": "string",
-        "value": "vertical",
-        "description": "How child items (text, image, button, etc.) should be arranged within this column",
-        "options": [
-          {
-            "name": "Vertical",
-            "value": "vertical"
-          },
-          {
-            "name": "Horizontal",
-            "value": "horizontal"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "id": "fragment",
     "fields": [
       {

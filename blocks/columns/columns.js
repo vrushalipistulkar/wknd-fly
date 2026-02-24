@@ -108,49 +108,6 @@ export default function decorate(block) {
     row.classList.add('columns-row');
     //const firstChild = row.querySelector(':scope > div:first-child');
     [...row.children].forEach((col) => {
-      // Read childLayout field from column
-      // Check for data-aue-prop first, then fallback to reading from column children
-      let childLayout = 'vertical'; // default
-      const layoutField = col.querySelector('[data-aue-prop="childLayout"]');
-      if (layoutField) {
-        const p = layoutField.querySelector('p');
-        const layoutValue = (p?.textContent?.trim() || layoutField.textContent?.trim() || 'vertical').toLowerCase();
-        if (layoutValue === 'horizontal' || layoutValue === 'vertical') {
-          childLayout = layoutValue;
-        }
-        // Hide the config field div
-        layoutField.style.display = 'none';
-      } else {
-        // Fallback: check all children for a div containing "horizontal" or "vertical"
-        // This handles the case where the field is stored in the block structure
-        const children = Array.from(col.children);
-        for (const child of children) {
-          const text = child.textContent?.trim().toLowerCase() || '';
-          if (text === 'horizontal' || text === 'vertical') {
-            childLayout = text;
-            // Hide the config div
-            child.style.display = 'none';
-            break;
-          }
-          // Also check for p tag inside
-          const p = child.querySelector('p');
-          if (p) {
-            const pText = p.textContent?.trim().toLowerCase() || '';
-            if (pText === 'horizontal' || pText === 'vertical') {
-              childLayout = pText;
-              // Hide the config div
-              child.style.display = 'none';
-              break;
-            }
-          }
-        }
-      }
-      
-      // Apply layout class to column
-      if (childLayout === 'horizontal') {
-        col.classList.add('columns-horizontal');
-      }
-      
       const pic = col.querySelector('picture');
       if (pic) {
         const picWrapper = pic.closest('div');
