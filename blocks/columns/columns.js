@@ -187,7 +187,20 @@ function processColumnAlignment(col) {
   updateAlignment();
   
   // Hide the alignment config div (but keep it in DOM for UE)
+  // Use multiple methods to ensure it's hidden
   alignmentDiv.style.display = 'none';
+  alignmentDiv.style.visibility = 'hidden';
+  alignmentDiv.style.height = '0';
+  alignmentDiv.style.overflow = 'hidden';
+  alignmentDiv.setAttribute('data-aue-hidden', 'true');
+  
+  // Also hide any p tags inside
+  const alignmentP = alignmentDiv.querySelector('p');
+  if (alignmentP) {
+    alignmentP.style.display = 'none';
+    alignmentP.style.visibility = 'hidden';
+    alignmentP.style.height = '0';
+  }
   
   // Set up MutationObserver to watch for changes to the alignment field
   // This ensures the classes update when the user changes the value in UE
@@ -215,12 +228,36 @@ function processColumnAlignment(col) {
     col._alignmentObserver = observer;
     col._updateAlignment = updateAlignment; // Store reference for UE events
     
-    // Also set up a periodic check as a fallback (every 500ms when in author mode)
+    // Also set up a periodic check as a fallback (every 300ms when in author mode)
     // This catches cases where MutationObserver might miss changes
     if (document.documentElement.classList.contains('adobe-ue-edit')) {
       col._alignmentInterval = setInterval(() => {
+        // Re-find alignmentDiv in case it was replaced
+        const currentDiv = col.querySelector('[data-aue-prop="itemAlignment"]');
+        if (currentDiv && currentDiv !== alignmentDiv) {
+          // Alignment div was replaced, update our reference and re-observe
+          alignmentDiv = currentDiv;
+          observer.disconnect();
+          observer.observe(alignmentDiv, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeOldValue: false
+          });
+          observer.observe(col, {
+            childList: true,
+            subtree: false
+          });
+          // Re-hide the new div
+          alignmentDiv.style.display = 'none';
+          alignmentDiv.style.visibility = 'hidden';
+          alignmentDiv.style.height = '0';
+          alignmentDiv.style.overflow = 'hidden';
+          alignmentDiv.setAttribute('data-aue-hidden', 'true');
+        }
         updateAlignment();
-      }, 500);
+      }, 300);
     }
   }
   
@@ -232,6 +269,10 @@ function processColumnAlignment(col) {
     if (col._alignmentInterval) {
       clearInterval(col._alignmentInterval);
       col._alignmentInterval = null;
+    }
+    if (col._alignmentObserver) {
+      col._alignmentObserver.disconnect();
+      col._alignmentObserver = null;
     }
   };
   
@@ -318,6 +359,21 @@ export default function decorate(block) {
           // Re-process all columns in case new ones were added or properties changed
           [...block.children].forEach((row) => {
             [...row.children].forEach((col) => {
+              // CRITICAL: Ensure UE attributes are always present (they might get lost when UE adds content)
+              // This is essential for the + icon to continue working
+              if (!col.hasAttribute('data-aue-model')) {
+                col.setAttribute('data-aue-model', 'column');
+              }
+              if (!col.hasAttribute('data-aue-type')) {
+                col.setAttribute('data-aue-type', 'component');
+              }
+              if (!col.hasAttribute('data-aue-filter')) {
+                col.setAttribute('data-aue-filter', 'column');
+              }
+              if (!col.hasAttribute('data-aue-behavior')) {
+                col.setAttribute('data-aue-behavior', 'component');
+              }
+              
               // If already processed, just update alignment (property might have changed)
               if (col._alignmentProcessed && col._updateAlignment) {
                 col._updateAlignment();
