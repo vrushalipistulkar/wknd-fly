@@ -101,13 +101,57 @@ function isVideoLink(link) {
 
 export default function decorate(block) {
   // Read column widths from block configuration (following flights block pattern)
-  // Config fields are in div > div structure: columns, rows, columnWidths
-  const readConfigValue = (index) => {
+  // Try multiple approaches to find the config value
+  const readConfigValue = (fieldName) => {
+    // First try: find by data-aue-prop attribute anywhere in block
+    let fieldElement = block.querySelector(`[data-aue-prop="${fieldName}"]`);
+    if (fieldElement) {
+      // Check for nested div or p tag
+      const nestedDiv = fieldElement.querySelector('div');
+      const nestedP = fieldElement.querySelector('p');
+      if (nestedDiv) {
+        const value = nestedDiv.textContent?.trim() || '';
+        if (value) return value;
+      }
+      if (nestedP) {
+        const value = nestedP.textContent?.trim() || '';
+        if (value) return value;
+      }
+      const value = fieldElement.textContent?.trim() || '';
+      if (value) return value;
+    }
+    
+    // Second try: look for direct children with data-aue-prop (config fields are usually direct children)
+    const directChild = Array.from(block.children).find(child => 
+      child.getAttribute('data-aue-prop') === fieldName
+    );
+    if (directChild) {
+      const nestedDiv = directChild.querySelector('div');
+      const nestedP = directChild.querySelector('p');
+      if (nestedDiv) {
+        const value = nestedDiv.textContent?.trim() || '';
+        if (value) return value;
+      }
+      if (nestedP) {
+        const value = nestedP.textContent?.trim() || '';
+        if (value) return value;
+      }
+      const value = directChild.textContent?.trim() || '';
+      if (value) return value;
+    }
+    
+    // Third try: index-based approach (for backwards compatibility)
+    const index = fieldName === 'columns' ? 1 : fieldName === 'rows' ? 2 : 3;
     const div = block.querySelector(`:scope > div:nth-child(${index}) > div`);
-    return div?.textContent?.trim() || '';
+    if (div) {
+      const value = div.textContent?.trim() || '';
+      if (value) return value;
+    }
+    
+    return '';
   };
 
-  const columnWidthsStr = readConfigValue(3); // Third config field (after columns and rows)
+  const columnWidthsStr = readConfigValue('columnWidths');
   
   // Parse column widths
   let columnWidths = [];
@@ -122,6 +166,22 @@ export default function decorate(block) {
     if (sum > 0 && sum !== 100) {
       columnWidths = columnWidths.map(w => (w / sum) * 100);
     }
+  }
+
+  // Debug: log what we found
+  if (columnWidthsStr) {
+    console.log('Columns block - Found columnWidths:', columnWidthsStr);
+  } else {
+    console.log('Columns block - No columnWidths found. Checking DOM structure...');
+    // Debug: log all children to see structure
+    Array.from(block.children).forEach((child, index) => {
+      console.log(`Child ${index}:`, {
+        tagName: child.tagName,
+        dataAueProp: child.getAttribute('data-aue-prop'),
+        className: child.className,
+        textContent: child.textContent?.substring(0, 50)
+      });
+    });
   }
 
   // Hide config divs but keep them for Universal Editor
