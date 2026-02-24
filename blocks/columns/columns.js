@@ -164,19 +164,32 @@ export default function decorate(block) {
   const readConfigValue = (fieldName) => {
     console.log(`Columns block - Searching for config field: ${fieldName}`);
     
-    // Debug: Log all children to see structure
-    const childrenInfo = Array.from(block.children).map((child, idx) => ({
-      index: idx,
-      tagName: child.tagName,
-      className: child.className,
-      dataAueProp: child.getAttribute('data-aue-prop'),
-      dataAueModel: child.getAttribute('data-aue-model'),
-      dataAueType: child.getAttribute('data-aue-type'),
-      textPreview: child.textContent?.substring(0, 100),
-      childrenCount: child.children.length,
-      allAttributes: Array.from(child.attributes).map(attr => `${attr.name}="${attr.value}"`).join(', ')
-    }));
-    console.log('Columns block - All block children:', childrenInfo);
+    // Debug: Log all children to see structure - EXPAND FULLY
+    const childrenInfo = Array.from(block.children).map((child, idx) => {
+      const info = {
+        index: idx,
+        tagName: child.tagName,
+        className: child.className,
+        dataAueProp: child.getAttribute('data-aue-prop'),
+        dataAueModel: child.getAttribute('data-aue-model'),
+        dataAueType: child.getAttribute('data-aue-type'),
+        textPreview: child.textContent?.substring(0, 100),
+        childrenCount: child.children.length,
+        allAttributes: Array.from(child.attributes).map(attr => `${attr.name}="${attr.value}"`).join(', '),
+        innerHTML: child.innerHTML?.substring(0, 300)
+      };
+      // Also log child's children
+      if (child.children.length > 0) {
+        info.childDetails = Array.from(child.children).map((grandchild, gIdx) => ({
+          index: gIdx,
+          tagName: grandchild.tagName,
+          dataAueProp: grandchild.getAttribute('data-aue-prop'),
+          textContent: grandchild.textContent?.trim()?.substring(0, 50)
+        }));
+      }
+      return info;
+    });
+    console.log('Columns block - All block children (FULL):', JSON.stringify(childrenInfo, null, 2));
     
     // Also check block's own attributes
     console.log('Columns block - Block attributes:', {
@@ -360,18 +373,43 @@ export default function decorate(block) {
     attributeFilter: ['data-aue-prop', 'data-aue-model']
   });
   
-  // Also try to read from Universal Editor's data model if available
-  // This is a fallback if config fields aren't in DOM yet
-  if (window.aem && window.aem.utils) {
+  // Try to read from Universal Editor's internal state
+  // Universal Editor stores component data in window.aem or similar
+  const tryReadFromUE = () => {
     try {
+      // Check if Universal Editor has the data stored
       const blockResource = block.getAttribute('data-aue-resource');
-      if (blockResource) {
-        console.log('Columns block - Attempting to read from AEM data model:', blockResource);
-        // This is a placeholder - actual implementation depends on AEM API
+      if (blockResource && window.aem) {
+        console.log('Columns block - Checking Universal Editor state for:', blockResource);
+        // Universal Editor might store data in a global registry
+        // This is experimental - actual API may vary
+      }
+      
+      // Alternative: Check if there's a hidden input or data attribute
+      const hiddenInputs = block.querySelectorAll('input[type="hidden"]');
+      hiddenInputs.forEach(input => {
+        if (input.name && input.name.includes('columnWidths')) {
+          console.log('Columns block - Found hidden input:', input.name, input.value);
+          return input.value;
+        }
+      });
+      
+      // Check block's dataset for stored values
+      if (block.dataset.columnWidths) {
+        console.log('Columns block - Found in dataset:', block.dataset.columnWidths);
+        return block.dataset.columnWidths;
       }
     } catch (e) {
-      console.log('Columns block - Could not read from AEM data model:', e);
+      console.log('Columns block - Error reading from UE:', e);
     }
+    return null;
+  };
+  
+  // Try reading from UE as fallback
+  const ueValue = tryReadFromUE();
+  if (ueValue) {
+    console.log('Columns block - Found value from UE:', ueValue);
+    // Process this value
   }
 
   // Find first actual row (skip config divs)
