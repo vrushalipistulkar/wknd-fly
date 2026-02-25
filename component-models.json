@@ -750,6 +750,27 @@
     ]
   },
   {
+    "id": "user-registration",
+    "fields": []
+  },
+  {
+    "id": "sign-in",
+    "fields": []
+  },
+  {
+    "id": "membership",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title",
+        "value": "BECOME A MEMBER",
+        "description": "Main heading for the membership form"
+      }
+    ]
+  },
+  {
       "id": "dynamic-media-image",
       "fields": [
         {

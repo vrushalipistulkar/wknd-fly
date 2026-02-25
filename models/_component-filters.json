@@ -66,5 +66,8 @@
     "components": [
       "flight"
     ]
+  },
+  {
+    "...": "../blocks/*/_*.json#/filters"
   }
 ]

@@ -33,7 +33,10 @@
       "embed-adaptive-form",
       "find-a-doctor",
       "flight-search",
-      "flights"
+      "flights",
+      "user-registration",
+      "sign-in",
+      "membership"
     ]
   },
   {
