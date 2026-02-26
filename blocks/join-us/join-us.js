@@ -1,20 +1,35 @@
 /**
- * Join Us block – same structure as sign-in block.
- * Shows a "Join Us" button that opens a modal form (First Name, Last Name, Email, Phone, consent; all optional).
- * On submit, shows green success popup then closes modal.
+ * Join Us block – form visible by default (like sign-in).
+ * On click of JOIN US button, show green success popup: "Thank you for joining WKND Fly Club..."
+ * All fields optional.
  */
 
-function createModal() {
+function showSuccessPopup(container, onDone) {
   const overlay = document.createElement('div');
-  overlay.className = 'join-us-overlay';
-  overlay.setAttribute('aria-hidden', 'true');
+  overlay.className = 'join-us-success-overlay';
+  overlay.setAttribute('aria-live', 'polite');
+  overlay.innerHTML = `
+    <div class="join-us-success-popup join-us-success-visible">
+      <span class="join-us-success-icon" aria-hidden="true"></span>
+      <p class="join-us-success-text">Thank you for joining WKND Fly Club. Check your email, new exciting travels are ahead of you!</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.classList.add('join-us-success-overlay-visible');
+  setTimeout(() => {
+    overlay.classList.remove('join-us-success-overlay-visible');
+    setTimeout(() => {
+      overlay.remove();
+      if (onDone) onDone();
+    }, 300);
+  }, 3500);
+}
 
-  const modal = document.createElement('div');
-  modal.className = 'join-us-modal';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-labelledby', 'join-us-title');
+export default async function decorate(block) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'join-us-content';
 
-  modal.innerHTML = `
+  wrapper.innerHTML = `
     <h2 id="join-us-title" class="join-us-title">JOIN WKND FLY CLUB</h2>
     <form class="join-us-form" novalidate>
       <div class="join-us-field">
@@ -41,69 +56,13 @@ function createModal() {
       </div>
       <button type="submit" class="join-us-submit">JOIN US</button>
     </form>
-    <button type="button" class="join-us-close" aria-label="Close">&times;</button>
   `;
 
-  overlay.appendChild(modal);
-
-  const close = () => {
-    overlay.classList.remove('join-us-open');
-    overlay.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  };
-
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) close();
-  });
-  modal.querySelector('.join-us-close').addEventListener('click', close);
-
-  const form = modal.querySelector('.join-us-form');
+  const form = wrapper.querySelector('.join-us-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    showSuccessPopup(overlay, close);
+    showSuccessPopup(block);
   });
-
-  return overlay;
-}
-
-function showSuccessPopup(overlay, onClose) {
-  const popup = document.createElement('div');
-  popup.className = 'join-us-success-popup';
-  popup.setAttribute('role', 'alert');
-  popup.innerHTML = `
-    <span class="join-us-success-icon" aria-hidden="true"></span>
-    <p class="join-us-success-text">Thank you for joining WKND Fly Club. Check your email, new exciting travels are ahead of you!</p>
-  `;
-  overlay.appendChild(popup);
-  popup.classList.add('join-us-success-visible');
-  setTimeout(() => {
-    popup.classList.remove('join-us-success-visible');
-    setTimeout(() => {
-      popup.remove();
-      onClose();
-    }, 300);
-  }, 3500);
-}
-
-export default async function decorate(block) {
-  // Same pattern as sign-in: use a wrapper and replaceChildren so block has clear structure
-  const wrapper = document.createElement('div');
-  wrapper.className = 'join-us-content';
-
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'join-us-trigger';
-  button.textContent = 'Join Us';
-  wrapper.appendChild(button);
 
   block.replaceChildren(wrapper);
-
-  const overlay = createModal();
-  document.body.appendChild(overlay);
-
-  button.addEventListener('click', () => {
-    overlay.classList.add('join-us-open');
-    overlay.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  });
 }

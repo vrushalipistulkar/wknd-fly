@@ -1,69 +1,16 @@
-/* Join Us block – same pattern as sign-in so block is visible on page */
+/* Join Us block – form visible by default (like sign-in) */
 main .join-us {
   width: 100%;
   max-width: 480px;
   margin: 60px auto;
   padding: 40px 24px;
+  background: #f5f5f5;
+  border-radius: 12px;
   font-family: var(--body-font-family, system-ui, sans-serif);
 }
 
 main .join-us .join-us-content {
   display: block;
-  text-align: center;
-}
-
-.join-us-trigger {
-  display: inline-block;
-  padding: 12px 28px;
-  background: var(--link-color, #0563c1);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-}
-
-.join-us-trigger:hover {
-  background: #0453a3;
-  transform: translateY(-1px);
-}
-
-.join-us-trigger:active {
-  transform: translateY(0);
-}
-
-/* Overlay */
-.join-us-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s, visibility 0.25s;
-}
-
-.join-us-overlay.join-us-open {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Modal */
-.join-us-modal {
-  position: relative;
-  width: 90%;
-  max-width: 440px;
-  max-height: 90vh;
-  overflow-y: auto;
-  background: #f5f5f5;
-  border-radius: 12px;
-  padding: 32px 28px 28px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 .join-us-title {
@@ -186,35 +133,27 @@ main .join-us .join-us-content {
   transform: translateY(0);
 }
 
-/* Close button */
-.join-us-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  font-size: 1.5rem;
-  line-height: 1;
-  color: #666;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.2s, color 0.2s;
+/* Success overlay – full-screen, shows green popup on top (on click of JOIN US) */
+.join-us-success-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
 }
 
-.join-us-close:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: #1a1a1a;
+.join-us-success-overlay.join-us-success-overlay-visible {
+  opacity: 1;
+  visibility: visible;
 }
 
-/* Success popup – green bar with checkmark */
+/* Success popup – green bar with checkmark (per screenshot) */
 .join-us-success-popup {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -226,7 +165,6 @@ main .join-us .join-us-content {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
-  z-index: 10001;
 }
 
 .join-us-success-popup.join-us-success-visible {
