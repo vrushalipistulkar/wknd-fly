@@ -1,6 +1,6 @@
 /**
- * Join Us block – shows a "Join Us" button that opens a modal form.
- * Form: First Name, Last Name, Email, Phone, consent toggle. All fields optional.
+ * Join Us block – same structure as sign-in block.
+ * Shows a "Join Us" button that opens a modal form (First Name, Last Name, Email, Phone, consent; all optional).
  * On submit, shows green success popup then closes modal.
  */
 
@@ -86,12 +86,17 @@ function showSuccessPopup(overlay, onClose) {
 }
 
 export default async function decorate(block) {
-  block.classList.add('join-us-block');
+  // Same pattern as sign-in: use a wrapper and replaceChildren so block has clear structure
+  const wrapper = document.createElement('div');
+  wrapper.className = 'join-us-content';
+
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'join-us-trigger';
   button.textContent = 'Join Us';
-  block.appendChild(button);
+  wrapper.appendChild(button);
+
+  block.replaceChildren(wrapper);
 
   const overlay = createModal();
   document.body.appendChild(overlay);

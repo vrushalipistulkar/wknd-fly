@@ -1,6 +1,15 @@
-/* Join Us block – trigger button */
-.join-us-block {
+/* Join Us block – same pattern as sign-in so block is visible on page */
+main .join-us {
+  width: 100%;
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 40px 24px;
   font-family: var(--body-font-family, system-ui, sans-serif);
+}
+
+main .join-us .join-us-content {
+  display: block;
+  text-align: center;
 }
 
 .join-us-trigger {
