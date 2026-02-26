@@ -529,88 +529,55 @@ function decorateSections(main) {
 
 /**
  * Applies horizontal layout and percentage widths to section items when sec-item-widths is set.
- * When section has multiple direct children (e.g. default-content-wrapper + sign-in-wrapper),
- * applies flex to the section and widths to those children. Otherwise applies to
- * immediate children of .default-content-wrapper.
+ * Targets only immediate children of .default-content-wrapper so nested elements (e.g. inner <p>) are not styled.
  * @param {Element} section The section element
  */
 function applySectionItemWidths(section) {
   const raw = (section.dataset?.secItemWidths
     || section.getAttribute('data-sec-item-widths')
     || '').trim();
-  const sectionChildren = [...section.children].filter((el) => !el.classList?.contains('section-metadata'));
   const inner = section.querySelector('.default-content-wrapper') || section.firstElementChild;
   if (!inner) return;
+  // Only ever style immediate children of the wrapper ( :scope > * )
+  const immediateChildren = [...inner.querySelectorAll(':scope > *')];
   const clearWidths = (el) => {
-    if (!el) return;
     el.style.flex = '';
     el.style.maxWidth = '';
     el.style.boxSizing = '';
   };
-  const clearSectionFlex = () => {
-    section.style.display = '';
-    section.style.flexDirection = '';
-    section.style.flexWrap = '';
-    section.style.gap = '';
-    sectionChildren.forEach(clearWidths);
-  };
-  const clearInnerFlex = () => {
+  if (!raw) {
+    section.classList.remove('section-horizontal-widths');
     inner.style.display = '';
     inner.style.flexDirection = '';
     inner.style.flexWrap = '';
-    inner.style.gap = '';
-    [...inner.querySelectorAll(':scope > *')].forEach(clearWidths);
+    immediateChildren.forEach(clearWidths);
+    // Clear any widths that were wrongly applied to descendants
     inner.querySelectorAll('[style*="flex:"], [style*="max-width"]').forEach(clearWidths);
-  };
-  if (!raw) {
-    section.classList.remove('section-horizontal-widths');
-    clearSectionFlex();
-    clearInnerFlex();
     return;
   }
   const widths = raw.split(',')
     .map((s) => parseInt(s.trim(), 10))
     .filter((n) => !Number.isNaN(n) && n > 0 && n <= 100);
   if (widths.length === 0) return;
-  const immediateChildren = [...inner.querySelectorAll(':scope > *')];
-  const useSectionLevel = sectionChildren.length >= widths.length && sectionChildren.length > 1;
-  if (useSectionLevel) {
-    clearInnerFlex();
-    section.classList.add('section-horizontal-widths');
-    section.style.display = 'flex';
-    section.style.flexDirection = 'row';
-    section.style.flexWrap = 'nowrap';
-    section.style.gap = '24px';
-    sectionChildren.forEach((el, i) => {
-      if (widths[i] != null) {
-        el.style.flex = `0 0 ${widths[i]}%`;
-        el.style.maxWidth = `${widths[i]}%`;
-        el.style.boxSizing = 'border-box';
-      } else {
-        clearWidths(el);
-      }
-    });
-  } else {
-    clearSectionFlex();
-    const set = new Set(immediateChildren);
-    inner.querySelectorAll('[style*="flex:"], [style*="max-width"]').forEach((el) => {
-      if (!set.has(el)) clearWidths(el);
-    });
-    section.classList.add('section-horizontal-widths');
-    inner.style.display = 'flex';
-    inner.style.flexDirection = 'row';
-    inner.style.flexWrap = 'nowrap';
-    inner.style.gap = '24px';
-    immediateChildren.forEach((el, i) => {
-      if (widths[i] != null) {
-        el.style.flex = `0 0 ${widths[i]}%`;
-        el.style.maxWidth = `${widths[i]}%`;
-        el.style.boxSizing = 'border-box';
-      } else {
-        clearWidths(el);
-      }
-    });
-  }
+  const set = new Set(immediateChildren);
+  // Clear widths from nested elements only (not immediate children) so inner <p> etc. don't keep wrong %
+  inner.querySelectorAll('[style*="flex:"], [style*="max-width"]').forEach((el) => {
+    if (!set.has(el)) clearWidths(el);
+  });
+  section.classList.add('section-horizontal-widths');
+  inner.style.display = 'flex';
+  inner.style.flexDirection = 'row';
+  inner.style.flexWrap = 'nowrap';
+  inner.style.gap = '24px';
+  immediateChildren.forEach((el, i) => {
+    if (widths[i] != null) {
+      el.style.flex = `0 0 ${widths[i]}%`;
+      el.style.maxWidth = `${widths[i]}%`;
+      el.style.boxSizing = 'border-box';
+    } else {
+      clearWidths(el);
+    }
+  });
 }
 
 function setupSectionItemWidthsUE() {
