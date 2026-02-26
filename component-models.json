@@ -518,8 +518,24 @@
         "label": "Image Style",
         "options": [
           {
-            "name": "default",
+            "name": "Cover (default)",
             "value": ""
+          },
+          {
+            "name": "Contain",
+            "value": "contain"
+          },
+          {
+            "name": "Fill",
+            "value": "fill"
+          },
+          {
+            "name": "None",
+            "value": "none"
+          },
+          {
+            "name": "Scale Down",
+            "value": "scale-down"
           },
           {
             "name": "Compact Style",

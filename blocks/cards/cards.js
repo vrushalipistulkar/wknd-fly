@@ -103,9 +103,10 @@ export default function decorate(block) {
       }
     });
     
-    // Apply image style ONLY to the image container
-    if (imageContainerDiv && imageStyle && imageStyle !== 'default' && imageStyle !== '') {
-      imageContainerDiv.classList.add(imageStyle);
+    // Apply image style ONLY to the image container (Cover = default, no class needed)
+    const imageStyleClass = (imageStyle || '').trim().toLowerCase();
+    if (imageContainerDiv && imageStyleClass && imageStyleClass !== 'default') {
+      imageContainerDiv.classList.add(imageStyleClass);
     }
     
     // Apply CTA styles to button containers

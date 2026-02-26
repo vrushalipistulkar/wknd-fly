@@ -57,8 +57,24 @@
           "value": "",
           "options": [
             {
-              "name": "default",
+              "name": "Cover (default)",
               "value": ""
+            },
+            {
+              "name": "Contain",
+              "value": "contain"
+            },
+            {
+              "name": "Fill",
+              "value": "fill"
+            },
+            {
+              "name": "None",
+              "value": "none"
+            },
+            {
+              "name": "Scale Down",
+              "value": "scale-down"
             },
             {
               "name": "Compact Style",
@@ -105,9 +121,18 @@
           "name": "alignment",
           "label": "Alignment",
           "options": [
-            { "name": "Left", "value": "left" },
-            { "name": "Center", "value": "center" },
-            { "name": "Right", "value": "right" }
+            {
+              "name": "Left",
+              "value": "left"
+            },
+            {
+              "name": "Center",
+              "value": "center"
+            },
+            {
+              "name": "Right",
+              "value": "right"
+            }
           ]
         },
         {
@@ -115,9 +140,18 @@
           "name": "verticalalignment",
           "label": "Vertical Alignment",
           "options": [
-            { "name": "Top", "value": "top" },
-            { "name": "Middle", "value": "middle" },
-            { "name": "Bottom", "value": "bottom" }
+            {
+              "name": "Top",
+              "value": "top"
+            },
+            {
+              "name": "Middle",
+              "value": "middle"
+            },
+            {
+              "name": "Bottom",
+              "value": "bottom"
+            }
           ]
         },
         {
