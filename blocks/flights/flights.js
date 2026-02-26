@@ -307,19 +307,7 @@ function handleFlightSelect(flight) {
     id: flight.id || `trip-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   };
   addFlightToTrip(fullFlight);
-  const count = getSelectedFlights().length;
-  const msg = count === 1
-    ? `Added to trip. Go to checkout to complete booking.`
-    : `${count} flights in your trip. Go to checkout to complete booking.`;
-  if (typeof window.showTripFeedback === 'function') {
-    window.showTripFeedback(msg);
-  } else {
-    // eslint-disable-next-line no-alert
-    alert(msg);
-  }
-  // Update Book Now visibility if present
-  const bookBar = document.querySelector('.flights-book-now-bar');
-  if (bookBar) updateBookNowBar(bookBar);
+  window.location.href = getCheckoutPath();
 }
 
 // Create a default flight item structure in the DOM (editable)
