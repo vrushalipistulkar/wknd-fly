@@ -482,6 +482,10 @@
     ]
   },
   {
+    "id": "checkout",
+    "fields": []
+  },
+  {
     "id": "column",
     "fields": [
       {
