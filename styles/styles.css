@@ -799,6 +799,11 @@ main .section.section-horizontal-widths > .default-content-wrapper > div,
 main .section.section-horizontal-widths > .default-content-wrapper > p {
   box-sizing: border-box;
 }
+/* When section is the flex container (e.g. image + sign-in 40,60), size direct children correctly */
+main .section.section-horizontal-widths > * {
+  box-sizing: border-box;
+  min-width: 0;
+}
 
 /* Section Background Colors */
 main .section.bg-theme {  
