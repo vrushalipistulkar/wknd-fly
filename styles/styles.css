@@ -793,8 +793,10 @@ main .section.section-horizontal-widths > .default-content-wrapper {
   flex-direction: row;
   flex-wrap: nowrap;
   width: 100%;
+  gap: 24px;
 }
-main .section.section-horizontal-widths > .default-content-wrapper > div {
+main .section.section-horizontal-widths > .default-content-wrapper > div,
+main .section.section-horizontal-widths > .default-content-wrapper > p {
   box-sizing: border-box;
 }
 

@@ -568,6 +568,7 @@ function applySectionItemWidths(section) {
   inner.style.display = 'flex';
   inner.style.flexDirection = 'row';
   inner.style.flexWrap = 'nowrap';
+  inner.style.gap = '24px';
   immediateChildren.forEach((el, i) => {
     if (widths[i] != null) {
       el.style.flex = `0 0 ${widths[i]}%`;
