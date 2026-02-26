@@ -1,4 +1,4 @@
-/* Join Us block – form visible by default (like sign-in) */
+/* Join Us block – adaptive form (same pattern as sign-in) */
 main .join-us {
   width: 100%;
   max-width: 480px;
@@ -9,63 +9,93 @@ main .join-us {
   font-family: var(--body-font-family, system-ui, sans-serif);
 }
 
-main .join-us .join-us-content {
+main .join-us .join-us-form {
+  --form-columns: 12;
+  --form-button-background-color: var(--link-color, #0563c1);
+  --form-button-background-hover-color: #0453a3;
+  --form-input-border-color: #ccc;
+  --form-label-color: #333;
+  --form-label-font-weight: 500;
+  --form-label-font-size: 16px;
+  --form-field-vert-gap: 18px;
+  --form-field-horz-gap: 24px;
+}
+
+main .join-us form {
   display: block;
 }
 
-.join-us-title {
-  margin: 0 0 24px 0;
+main .join-us .panel-wrapper {
+  display: block !important;
+  padding: 0 !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+main .join-us .heading-wrapper label {
+  display: none !important;
+}
+
+main .join-us .heading-wrapper {
+  margin: 0 0 24px !important;
+  padding: 0 !important;
+  text-align: center;
+}
+
+main .join-us h2#heading-join-us {
   font-size: 1.25rem;
   font-weight: 700;
+  margin: 0;
+  padding: 0;
+  color: #1a1a1a;
+  line-height: 1.2;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: #1a1a1a;
 }
 
-.join-us-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+main .join-us .field-wrapper {
+  margin: 0 0 18px;
 }
 
-.join-us-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.join-us-field label {
-  font-size: 0.875rem;
-  font-weight: 500;
+main .join-us label {
   color: #333;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0;
+  display: inline-block;
 }
 
-.join-us-field input {
+main .join-us input[type="text"],
+main .join-us input[type="email"],
+main .join-us input[type="tel"] {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 1rem;
+  color: #1a1a1a;
   background: #fff;
+  margin-top: 6px;
+  margin-bottom: 0;
   box-sizing: border-box;
 }
 
-.join-us-field input:focus {
+main .join-us input:focus {
   outline: none;
   border-color: var(--link-color, #0563c1);
   box-shadow: 0 0 0 2px rgba(5, 99, 193, 0.15);
 }
 
-/* Consent toggle */
-.join-us-consent {
+/* Consent checkbox as switch/toggle */
+main .join-us .field-wrapper.switch {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin: 4px 0 8px 0;
+  margin: 4px 0 16px 0;
 }
 
-.join-us-toggle {
+main .join-us .field-wrapper.switch input[type="checkbox"] {
   width: 44px;
   height: 24px;
   min-width: 44px;
@@ -78,7 +108,7 @@ main .join-us .join-us-content {
   transition: background 0.2s;
 }
 
-.join-us-toggle::before {
+main .join-us .field-wrapper.switch input[type="checkbox"]::before {
   content: '';
   position: absolute;
   top: 2px;
@@ -91,26 +121,28 @@ main .join-us .join-us-content {
   transition: transform 0.2s;
 }
 
-.join-us-toggle:checked {
+main .join-us .field-wrapper.switch input[type="checkbox"]:checked {
   background: var(--link-color, #0563c1);
 }
 
-.join-us-toggle:checked::before {
+main .join-us .field-wrapper.switch input[type="checkbox"]:checked::before {
   transform: translateX(20px);
 }
 
-.join-us-toggle-label {
+main .join-us .field-wrapper.switch label {
+  flex: 1;
   font-size: 0.8125rem;
   color: #444;
   line-height: 1.4;
   cursor: pointer;
-  flex: 1;
 }
 
-/* Submit button */
-.join-us-submit {
-  width: 100%;
+main .join-us .submit-wrapper {
   margin-top: 8px;
+}
+
+main .join-us .submit-wrapper button {
+  width: 100%;
   padding: 14px 24px;
   background: var(--link-color, #0563c1);
   color: #fff;
@@ -124,16 +156,12 @@ main .join-us .join-us-content {
   transition: background 0.2s, transform 0.15s;
 }
 
-.join-us-submit:hover {
+main .join-us .submit-wrapper button:hover {
   background: #0453a3;
   transform: translateY(-1px);
 }
 
-.join-us-submit:active {
-  transform: translateY(0);
-}
-
-/* Success overlay – full-screen, shows green popup on top (on click of JOIN US) */
+/* Success overlay – on click of JOIN US */
 .join-us-success-overlay {
   position: fixed;
   inset: 0;
@@ -152,7 +180,6 @@ main .join-us .join-us-content {
   visibility: visible;
 }
 
-/* Success popup – green bar with checkmark (per screenshot) */
 .join-us-success-popup {
   display: flex;
   align-items: center;

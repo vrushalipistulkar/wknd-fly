@@ -1,10 +1,10 @@
 /**
- * Join Us block – form visible by default (like sign-in).
- * On click of JOIN US button, show green success popup: "Thank you for joining WKND Fly Club..."
- * All fields optional.
+ * Join Us block – same pattern as sign-in: adaptive form definition + form module.
+ * Form: JOIN WKND FLY CLUB heading, First Name, Last Name, Email, Phone, consent toggle, JOIN US button. All optional.
+ * On submit, show green success popup: "Thank you for joining WKND Fly Club..."
  */
 
-function showSuccessPopup(container, onDone) {
+function showSuccessPopup() {
   const overlay = document.createElement('div');
   overlay.className = 'join-us-success-overlay';
   overlay.setAttribute('aria-live', 'polite');
@@ -18,51 +18,106 @@ function showSuccessPopup(container, onDone) {
   overlay.classList.add('join-us-success-overlay-visible');
   setTimeout(() => {
     overlay.classList.remove('join-us-success-overlay-visible');
-    setTimeout(() => {
-      overlay.remove();
-      if (onDone) onDone();
-    }, 300);
+    setTimeout(() => overlay.remove(), 300);
   }, 3500);
 }
 
 export default async function decorate(block) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'join-us-content';
+  // Build Adaptive Form definition for Join Us (same pattern as sign-in)
+  const formDef = {
+    id: 'join-us',
+    fieldType: 'form',
+    appliedCssClassNames: 'join-us-form',
+    items: [
+      {
+        id: 'heading-join-us',
+        fieldType: 'heading',
+        label: { value: 'JOIN WKND FLY CLUB' },
+        appliedCssClassNames: 'col-12',
+      },
+      {
+        id: 'panel-main',
+        name: 'main',
+        fieldType: 'panel',
+        items: [
+          {
+            id: 'firstName',
+            name: 'firstName',
+            fieldType: 'text-input',
+            label: { value: 'First Name' },
+            properties: { colspan: 12 },
+          },
+          {
+            id: 'lastName',
+            name: 'lastName',
+            fieldType: 'text-input',
+            label: { value: 'Last Name' },
+            properties: { colspan: 12 },
+          },
+          {
+            id: 'email',
+            name: 'email',
+            fieldType: 'email',
+            label: { value: 'Email' },
+            properties: { colspan: 12 },
+          },
+          {
+            id: 'phone',
+            name: 'phone',
+            fieldType: 'text-input',
+            label: { value: 'Phone number' },
+            properties: { colspan: 12 },
+          },
+          {
+            id: 'consent',
+            name: 'consent',
+            fieldType: 'checkbox',
+            label: {
+              value: 'I want to join WKND Fly Club and I have read and understand the Privacy and Cookies Policy. I want to receive personalized communication by email.',
+            },
+            enum: ['true'],
+            type: 'string',
+            properties: {
+              variant: 'switch',
+              alignment: 'horizontal',
+              colspan: 12,
+            },
+          },
+          {
+            id: 'join-us-btn',
+            name: 'joinUsButton',
+            fieldType: 'button',
+            buttonType: 'submit',
+            label: { value: 'JOIN US' },
+            appliedCssClassNames: 'submit-wrapper col-12',
+          },
+        ],
+      },
+    ],
+  };
 
-  wrapper.innerHTML = `
-    <h2 id="join-us-title" class="join-us-title">JOIN WKND FLY CLUB</h2>
-    <form class="join-us-form" novalidate>
-      <div class="join-us-field">
-        <label for="join-us-first">First Name</label>
-        <input type="text" id="join-us-first" name="firstName" autocomplete="given-name">
-      </div>
-      <div class="join-us-field">
-        <label for="join-us-last">Last Name</label>
-        <input type="text" id="join-us-last" name="lastName" autocomplete="family-name">
-      </div>
-      <div class="join-us-field">
-        <label for="join-us-email">Email</label>
-        <input type="email" id="join-us-email" name="email" autocomplete="email">
-      </div>
-      <div class="join-us-field">
-        <label for="join-us-phone">Phone number</label>
-        <input type="tel" id="join-us-phone" name="phone" autocomplete="tel">
-      </div>
-      <div class="join-us-consent">
-        <input type="checkbox" id="join-us-consent" name="consent" class="join-us-toggle">
-        <label for="join-us-consent" class="join-us-toggle-label">
-          I want to join WKND Fly Club and I have read and understand the Privacy and Cookies Policy. I want to receive personalized communication by email.
-        </label>
-      </div>
-      <button type="submit" class="join-us-submit">JOIN US</button>
-    </form>
-  `;
+  // Create form container and inject definition (same as sign-in)
+  const formContainer = document.createElement('div');
+  formContainer.className = 'form';
 
-  const form = wrapper.querySelector('.join-us-form');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    showSuccessPopup(block);
-  });
+  const pre = document.createElement('pre');
+  const code = document.createElement('code');
+  code.textContent = JSON.stringify(formDef);
+  pre.append(code);
+  formContainer.append(pre);
+  block.replaceChildren(formContainer);
 
-  block.replaceChildren(wrapper);
+  const formModule = await import('../form/form.js');
+  await formModule.default(formContainer);
+
+  // After form is rendered, attach submit handler for success popup
+  setTimeout(() => {
+    const form = block.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showSuccessPopup();
+      });
+    }
+  }, 100);
 }
