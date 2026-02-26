@@ -573,3 +573,29 @@ picture {
 
   --------------------------
 */
+
+/* Hide new button/CTA config fields so they don't appear in HTML */
+.hero [data-aue-prop="eventType"],
+.hero [data-aue-prop="webhookUrl"],
+.hero [data-aue-prop="formId"],
+.hero [data-aue-prop="data"],
+.hero [data-aue-prop="alignment"],
+.hero [data-aue-prop="textUppercase"],
+.hero [data-aue-prop="backgroundColor"],
+.hero [data-aue-prop="backgroundColorOnHover"],
+.hero [data-aue-prop="textColor"],
+.hero [data-aue-prop="textColorOnHover"],
+.hero [data-aue-prop="borderColor"],
+.hero [data-aue-prop="borderColorOnHover"],
+.hero [data-aue-prop="borderWidth"],
+.hero [data-aue-prop="customStyles"] {
+  display: none !important;
+}
+.hero div:has(> [data-aue-prop="eventType"]),
+.hero div:has(> [data-aue-prop="webhookUrl"]),
+.hero div:has(> [data-aue-prop="formId"]),
+.hero div:has(> [data-aue-prop="data"]),
+.hero div:has(> [data-aue-prop="alignment"]),
+.hero div:has(> [data-aue-prop="customStyles"]) {
+  display: none !important;
+}

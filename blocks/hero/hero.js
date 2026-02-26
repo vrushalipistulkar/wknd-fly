@@ -36,14 +36,19 @@ export default function decorate(block) {
     ctaStyleParagraph.style.display = 'none';
   }
 
-  const underlineDiv = block.querySelector(':scope div:nth-child(3)');
+  const underlineDiv = block.querySelector(':scope > div:nth-child(3)');
   if (underlineDiv) underlineDiv.style.display = 'none';
-  const layoutStyleDiv = block.querySelector(':scope div:nth-child(4)');
+  const layoutStyleDiv = block.querySelector(':scope > div:nth-child(4)');
   if (layoutStyleDiv) layoutStyleDiv.style.display = 'none';
-  const ctaStyleDiv = block.querySelector(':scope div:nth-child(5)');
+  const ctaStyleDiv = block.querySelector(':scope > div:nth-child(5)');
   if (ctaStyleDiv) ctaStyleDiv.style.display = 'none';
-  const backgroundStyleDiv = block.querySelector(':scope div:nth-child(6)');
+  const backgroundStyleDiv = block.querySelector(':scope > div:nth-child(6)');
   if (backgroundStyleDiv) backgroundStyleDiv.style.display = 'none';
+
+  /* Hide remaining config rows (alignment, verticalalignment, isfullwidth, height, color, link, button actions) on live */
+  [...block.children].forEach((row, index) => {
+    if (index >= 7) row.style.display = 'none';
+  });
 
   /* Banner-like: alignment, vertical alignment, full width (keys may be hyphenated from readBlockConfig) */
   const alignment = (config.alignment || 'center').toLowerCase();

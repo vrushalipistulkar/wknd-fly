@@ -177,13 +177,6 @@
         },
         {
           "component": "text",
-          "name": "buttonlabel",
-          "label": "Button Label",
-          "value": "",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
           "name": "buttoneventtype",
           "label": "Button Event Type",
           "value": "",
