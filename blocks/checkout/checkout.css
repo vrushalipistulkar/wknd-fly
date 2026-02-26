@@ -316,6 +316,9 @@ main > .section:has(.checkout-block) > div {
 .checkout-confirm-btn:hover {
   filter: brightness(1.05);
 }
+label.checkout-checkbox {
+  flex-direction: row;
+}
 
 @media (max-width: 600px) {
   .checkout-block {

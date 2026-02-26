@@ -267,20 +267,22 @@ function displayFlightResults(flights, from, to, date, config = {}) {
     const route = createElement('div', 'flight-route');
     route.textContent = `${flight.fromName} (${flight.from}) to ${flight.toName} (${flight.to})`;
     
-    const times = createElement('div', 'flight-times');
-    times.innerHTML = `
-      <div class="flight-time">
-        <span class="flight-airport">${flight.from}</span>
-        <span class="flight-time-value">${flight.departureTime}</span>
-      </div>
-      <div class="flight-time">
-        <span class="flight-airport">${flight.to}</span>
-        <span class="flight-time-value">${flight.arrivalTime}</span>
-      </div>
+    const codesLine = createElement('div', 'flight-codes-line');
+    codesLine.innerHTML = `
+      <span class="flight-airport">${flight.from}</span>
+      <span class="flight-codes-connector" aria-hidden="true"></span>
+      <span class="flight-airport">${flight.to}</span>
+    `;
+    
+    const timesRow = createElement('div', 'flight-times-row');
+    timesRow.innerHTML = `
+      <span class="flight-time-value">${flight.departureTime}</span>
+      <span class="flight-time-value">${flight.arrivalTime}</span>
     `;
     
     detailsContainer.appendChild(route);
-    detailsContainer.appendChild(times);
+    detailsContainer.appendChild(codesLine);
+    detailsContainer.appendChild(timesRow);
     
     const priceContainer = createElement('div', 'flight-card-price');
     const priceClass = createElement('div', 'flight-class');
@@ -726,17 +728,18 @@ function processFlightItem(row) {
       routeEl.textContent = `${fromName || ''} (${from || ''}) to ${toName || ''} (${to || ''})`;
     }
     
-    // Update times
-    if (timesEl) {
-      timesEl.innerHTML = `
-        <div class="flight-time">
-          <span class="flight-airport">${from || ''}</span>
-          <span class="flight-time-value">${departureTime || ''}</span>
-        </div>
-        <div class="flight-time">
-          <span class="flight-airport">${to || ''}</span>
-          <span class="flight-time-value">${arrivalTime || ''}</span>
-        </div>
+    // Update airport codes line and times row
+    if (codesLineEl) {
+      codesLineEl.innerHTML = `
+        <span class="flight-airport">${from || ''}</span>
+        <span class="flight-codes-connector" aria-hidden="true"></span>
+        <span class="flight-airport">${to || ''}</span>
+      `;
+    }
+    if (timesRowEl) {
+      timesRowEl.innerHTML = `
+        <span class="flight-time-value">${departureTime || ''}</span>
+        <span class="flight-time-value">${arrivalTime || ''}</span>
       `;
     }
     
@@ -826,14 +829,16 @@ function processFlightItem(row) {
   const imageContainer = createElement('div', 'flight-card-image');
   const detailsContainer = createElement('div', 'flight-card-details');
   const routeEl = createElement('div', 'flight-route');
-  const timesEl = createElement('div', 'flight-times');
+  const codesLineEl = createElement('div', 'flight-codes-line');
+  const timesRowEl = createElement('div', 'flight-times-row');
   const priceContainer = createElement('div', 'flight-card-price');
   const priceClassEl = createElement('div', 'flight-class');
   const priceEl = createElement('div', 'flight-price');
   const selectButton = createElement('button', 'flight-select-button', 'Select');
   
   detailsContainer.appendChild(routeEl);
-  detailsContainer.appendChild(timesEl);
+  detailsContainer.appendChild(codesLineEl);
+  detailsContainer.appendChild(timesRowEl);
   priceContainer.appendChild(priceClassEl);
   priceContainer.appendChild(priceEl);
   priceContainer.appendChild(selectButton);

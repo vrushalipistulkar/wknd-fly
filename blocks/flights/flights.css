@@ -36,106 +36,128 @@
   gap: 1.5rem;
 }
 
-/* Flight Card */
+/* Flight Card – layout: image (left) | route + codes + times (middle) | class + price + Select (right) */
 .flight-card {
   display: grid;
-  grid-template-columns: 200px 1fr auto;
-  gap: 1.5rem;
+  grid-template-columns: 160px 1fr auto;
+  gap: 0;
+  align-items: stretch;
   background: var(--background-color, #ffffff);
-  border: 1px solid var(--border-color, #ddd);
+  border: 1px solid var(--border-color, #e0e0e0);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .flight-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
 
 .flight-card-image {
-  width: 200px;
-  height: 100%;
-  min-height: 200px;
+  width: 160px;
+  min-height: 140px;
   overflow: hidden;
 }
 
 .flight-card-image img {
   width: 100%;
   height: 100%;
+  min-height: 140px;
   object-fit: cover;
+  border-radius: 12px 0 0 12px;
 }
 
 .flight-card-details {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.flight-route {
-  font-size: 1rem;
-  color: var(--text-color-secondary, #666);
-  font-weight: 500;
-}
-
-.flight-times {
+  padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  justify-content: center;
 }
 
-.flight-time {
+.flight-route {
+  font-size: 0.9375rem;
+  color: var(--text-color-secondary, #666);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Airport codes with line between (WAW —— TQO) */
+.flight-codes-line {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin: 0.25rem 0 0 0;
 }
 
 .flight-airport {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-color, #333);
-  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.flight-codes-connector {
+  flex: 1;
+  max-width: 80px;
+  height: 0;
+  border-top: 2px solid var(--border-color, #ccc);
+  min-width: 40px;
+}
+
+/* Times under each code – left time under WAW, right time under TQO */
+.flight-times-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  max-width: 200px;
+}
+
+.flight-times-row .flight-time-value {
+  flex: 0 0 auto;
 }
 
 .flight-time-value {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-color, #333);
 }
 
 .flight-card-price {
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
-  gap: 1rem;
-  min-width: 150px;
-  background: var(--background-color-secondary, #f8f9fa);
+  gap: 0.75rem;
+  min-width: 140px;
+  background: var(--background-color-secondary, #f5f5f5);
+  border-radius: 0 12px 12px 0;
 }
 
 .flight-class {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--text-color-secondary, #666);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-transform: none;
+  letter-spacing: 0.3px;
 }
 
 .flight-price {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-color, #333);
 }
 
 .flight-select-button {
-  padding: 0.75rem 2rem;
-  background: var(--link-color, #0066cc);
-  color: var(--text-color-light, #ffffff);
+  padding: 0.625rem 1.5rem;
+  background: var(--link-color, #0563c1);
+  color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
@@ -143,7 +165,7 @@
 }
 
 .flight-select-button:hover {
-  background: var(--link-color-hover, #0052a3);
+  background: var(--link-color-hover, #0453a3);
   transform: translateY(-1px);
 }
 
@@ -192,9 +214,14 @@
     min-height: 200px;
   }
   
+  .flight-card-image img {
+    border-radius: 12px 12px 0 0;
+  }
+  
   .flight-card-price {
     align-items: flex-start;
     min-width: auto;
+    border-radius: 0 0 12px 12px;
   }
 }
 
