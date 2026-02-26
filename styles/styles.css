@@ -788,6 +788,9 @@ main > .section[data-sec-full-width="true"] > div {
 }
 
 /* Section horizontal layout with percentage item widths (Item widths (%) field) */
+.section.section-horizontal-widths {
+  display: flex;
+}
 main .section.section-horizontal-widths > .default-content-wrapper {
   display: flex;
   flex-direction: row;
