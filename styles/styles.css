@@ -40,7 +40,7 @@
   /* brand-scoped header/footer variables with sensible defaults */
   --nav-background-color: var(--brand-nav-background-color, #0000008c);
   --nav-text-color: var(--brand-nav-text-color, #ffffff);
-  --footer-background-color: var(--brand-footer-background-color, #000);
+  --footer-background-color: var(--brand-footer-background-color, #01153a);
   --footer-text-color: var(--brand-footer-text-color, #ffffff);
   
   /* fonts */

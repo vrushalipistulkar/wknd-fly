@@ -33,7 +33,9 @@ footer .footer a {
 footer .footer a:hover {
   color: var(--main-accent-color);
 }
-
+.footer.block .section.section-horizontal-widths {
+  display: block !important;
+}
 @media (width >= 900px) {
   footer .footer > div {
     padding: 50px 32px;
