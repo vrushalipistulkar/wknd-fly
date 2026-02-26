@@ -491,3 +491,85 @@ picture {
 .hero.block.overlay .button-container.cta-link a.button::after  ,.hero.image-background-text-left .button-container.cta-link a.button::after,.hero.image-background-text-right .button-container.cta-link a.button::after  {
   color: var(--text-light);
 }
+
+/*
+  --------------------------
+  Banner-like: Alignment, vertical alignment, full width
+  Uncomment when ready to test with new hero authoring fields.
+  --------------------------
+
+  Alignment (horizontal)
+.hero.hero--alignment-left,
+.hero.hero--alignment-left h1,
+.hero.hero--alignment-left h2,
+.hero.hero--alignment-left h3,
+.hero.hero--alignment-left h4,
+.hero.hero--alignment-left h5,
+.hero.hero--alignment-left h6,
+.hero.hero--alignment-left p {
+  text-align: left;
+}
+
+.hero.hero--alignment-left .button-container {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.hero.hero--alignment-center,
+.hero.hero--alignment-center h1,
+.hero.hero--alignment-center h2,
+.hero.hero--alignment-center h3,
+.hero.hero--alignment-center h4,
+.hero.hero--alignment-center h5,
+.hero.hero--alignment-center h6,
+.hero.hero--alignment-center p {
+  text-align: center;
+}
+
+.hero.hero--alignment-center .button-container {
+  justify-content: center;
+  text-align: center;
+}
+
+.hero.hero--alignment-right,
+.hero.hero--alignment-right h1,
+.hero.hero--alignment-right h2,
+.hero.hero--alignment-right h3,
+.hero.hero--alignment-right h4,
+.hero.hero--alignment-right h5,
+.hero.hero--alignment-right h6,
+.hero.hero--alignment-right p {
+  text-align: right;
+}
+
+.hero.hero--alignment-right .button-container {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+  Vertical alignment
+.hero.hero--verticalalignment-top {
+  align-items: flex-start;
+}
+
+.hero.hero--verticalalignment-middle {
+  align-items: center;
+}
+
+.hero.hero--verticalalignment-bottom {
+  align-items: flex-end;
+}
+
+  Full width
+.hero.hero--fullwidth {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+  --------------------------
+*/
