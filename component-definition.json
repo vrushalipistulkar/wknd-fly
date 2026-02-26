@@ -374,22 +374,6 @@
           }
         },
         {
-          "title": "Section (nested)",
-          "id": "section-block",
-          "plugins": {
-            "xwalk": {
-              "page": {
-                "resourceType": "core/franklin/components/section/v1/section",
-                "template": {
-                  "name": "Section",
-                  "model": "section",
-                  "filter": "section"
-                }
-              }
-            }
-          }
-        },
-        {
           "title": "Content Fragment",
           "id": "contentfragment",
           "plugins": {
