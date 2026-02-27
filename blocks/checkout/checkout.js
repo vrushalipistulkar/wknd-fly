@@ -169,11 +169,78 @@ function renderUpgradeAndPreferences(mainCol) {
     <h3 class="checkout-section-title">Preferences</h3>
     <div class="checkout-prefs">
       <label>Seat <select name="seat"><option value="">Select...</option><option value="window">Window</option><option value="aisle">Aisle</option></select></label>
-      <label>Section <select name="section"><option value="">Select...</option><option value="front">Front</option><option value="rear">Rear</option></select></label>
+      <label>Section <select name="section"><option value="">Select...</option><option value="forward">Forward</option><option value="rear">Rear</option></select></label>
       <label>Meal <select name="meal"><option value="">Select...</option><option value="standard">Standard</option><option value="vegetarian">Vegetarian</option></select></label>
     </div>
   `;
   mainCol.appendChild(prefs);
+}
+
+/** Read value from input/select (text or checked for checkbox) */
+function getFieldValue(block, name) {
+  const el = block.querySelector(`[name="${name}"]`);
+  if (!el) return el === null ? '' : undefined;
+  if (el.type === 'checkbox') return el.checked;
+  return (el.value || '').trim();
+}
+
+/** Push all checkout form fields to datalayer (passenger, payment, upgrade, preferences) */
+function updateDataLayerFromCheckoutForm(block) {
+  if (typeof window.updateDataLayer !== 'function') return;
+  const v = (name) => getFieldValue(block, name);
+
+  const updates = {
+    upgradeWithPoints: v('upgrade-points') === true,
+    travelPreferences: {
+      seat: v('seat') || '',
+      seatSection: v('section') || '',
+      meal: v('meal') || '',
+    },
+    person: {
+      name: {
+        firstName: v('firstName') || '',
+        middleName: v('middleName') || '',
+        lastName: v('lastName') || '',
+      },
+      gender: v('gender') || '',
+      birthDate: v('birthDate') || '',
+      isMember: v('wknd-club') === true,
+    },
+    personalEmail: { address: v('email') || '' },
+    mobilePhone: { number: v('phone') || '' },
+    smsConsent: v('sms') === true,
+    payment: {
+      nameOnCard: v('nameOnCard') || '',
+      cardExpiration: v('expiration') || '',
+      cardNumber: v('cardNumber') || '',
+      cvv: v('cvv') || '',
+    },
+    consents: {
+      marketing: {
+        email: { val: v('promo') === true },
+      },
+    },
+  };
+
+  updates._demosystem4 = {
+    identification: {
+      core: { loyaltyId: v('frequentFlyerId') || '' },
+    },
+  };
+
+  window.updateDataLayer(updates, true);
+}
+
+/** Attach listeners so datalayer stays in sync with all checkout form fields */
+function attachCheckoutDataLayerListeners(block) {
+  updateDataLayerFromCheckoutForm(block);
+  const inputs = block.querySelectorAll('input, select');
+  inputs.forEach((el) => {
+    const name = el.getAttribute('name');
+    if (!name) return;
+    const event = el.type === 'checkbox' ? 'change' : 'blur';
+    el.addEventListener(event, () => updateDataLayerFromCheckoutForm(block));
+  });
 }
 
 function renderPassengerForm(mainCol) {
@@ -241,10 +308,13 @@ function renderTripTotal(sidebar, total) {
         return;
       }
       const formData = block ? collectCheckoutFormData(block) : {};
+      const bookingRef = generateBookingReference();
+      const ticketNum = generateElectronicTicketNumber();
+      const itineraryNum = generateItineraryNumber();
       const bookingData = {
-        bookingReference: generateBookingReference(),
-        electronicTicketNumber: generateElectronicTicketNumber(),
-        itineraryNumber: generateItineraryNumber(),
+        bookingReference: bookingRef,
+        electronicTicketNumber: ticketNum,
+        itineraryNumber: itineraryNum,
         total: flightsTotal,
         passengerCount: 1,
         flights: flights.map((f) => ({ ...f, route: formatRoute(f) })),
@@ -255,6 +325,14 @@ function renderTripTotal(sidebar, total) {
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn('Could not save booking to sessionStorage', e);
+      }
+      if (typeof window.updateDataLayer === 'function') {
+        updateDataLayerFromCheckoutForm(block);
+        window.updateDataLayer({
+          itineraryNumber: itineraryNum,
+          bookingReference: bookingRef,
+          ticketNumber: ticketNum,
+        }, true);
       }
       window.location.href = getConfirmationPath();
     };
@@ -300,4 +378,6 @@ export default async function decorate(block) {
   wrapper.appendChild(mainCol);
   wrapper.appendChild(sidebar);
   block.appendChild(wrapper);
+
+  attachCheckoutDataLayerListeners(block);
 }

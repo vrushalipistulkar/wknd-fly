@@ -110,6 +110,7 @@ function getInitialDataLayerFromDataElements() {
     ticketNumber: '',
     itineraryNumber: '',
     class: '',
+    upgradeWithPoints: false,
     travelPreferences: {
       seat: '',
       seatSection: '',
@@ -142,6 +143,7 @@ function getInitialDataLayerFromDataElements() {
     person: {
       name: {
         firstName: '',
+        middleName: '',
         lastName: '',
       },
       gender: '',
