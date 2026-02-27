@@ -248,7 +248,7 @@ function renderPassengerForm(mainCol) {
   section.className = 'checkout-section';
   section.innerHTML = `
     <h3 class="checkout-section-title">Passenger Information</h3>
-    <p class="checkout-description">Please make sure your full name is entered exactly as it appears on your government-issued identification. This information is required based on international regulations. Refer to our <a href="/terms">Terms and Conditions</a> to learn more.</p>
+    <p class="checkout-description">Please make sure your full name is entered exactly as it appears on your government-issued identification. This information is required based on international regulations.</p>
     <div class="checkout-form">
       <label>First Name <input type="text" name="firstName"></label>
       <label>Middle Name (optional) <input type="text" name="middleName"></label>

@@ -7,7 +7,7 @@
 
 /* Search Form */
 .flight-search-form {
-  background: var(--background-color-secondary, #1a1a2e);
+  background: var(--background-color-secondary, #01153a);
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -136,6 +136,7 @@
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
   white-space: nowrap;
+  background-color:#1979c3;
 }
 
 .flight-search-button:hover {
