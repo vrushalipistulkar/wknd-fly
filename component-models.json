@@ -105,6 +105,23 @@
         "component": "text",
         "name": "imageAlt",
         "label": "Alt Text"
+      },
+      {
+        "component": "select",
+        "name": "style",
+        "label": "Style",
+        "valueType": "string",
+        "value": "",
+        "options": [
+          {
+            "name": "Default",
+            "value": ""
+          },
+          {
+            "name": "Rounded corner",
+            "value": "rounded-corner"
+          }
+        ]
       }
     ]
   },
@@ -586,23 +603,14 @@
       {
         "component": "select",
         "name": "alignment",
-        "label": "Alignment",
+        "label": "Text Alignment",
         "options": [
           { "name": "Left", "value": "left" },
           { "name": "Center", "value": "center" },
           { "name": "Right", "value": "right" }
         ]
       },
-      {
-        "component": "select",
-        "name": "verticalalignment",
-        "label": "Vertical Alignment",
-        "options": [
-          { "name": "Top", "value": "top" },
-          { "name": "Middle", "value": "middle" },
-          { "name": "Bottom", "value": "bottom" }
-        ]
-      },
+ 
       {
         "component": "text",
         "name": "buttoneventtype",

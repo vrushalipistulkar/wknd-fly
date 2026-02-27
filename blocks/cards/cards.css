@@ -552,8 +552,8 @@
 .cards > ul > li.cards-card--verticalalignment-bottom .cards-card-body {
   justify-content: flex-end;
 }*/
-/*
-  Selectable
+
+ /* Selectable*/
 .cards > ul > li.cards-card--selectable {
   cursor: pointer;
   border: 2px solid transparent;
@@ -564,7 +564,7 @@
   border-radius: 4px;
 }
 
-  Section link (card clickable)
+   /*Section link (card clickable)*/
 .cards > ul > li[data-section-link] {
   cursor: pointer;
 }
