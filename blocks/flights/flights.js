@@ -310,7 +310,55 @@ function displayFlightResults(flights, from, to, date, config = {}) {
   block.appendChild(resultsList);
 }
 
-// Handle flight selection: add to trip and show feedback
+// Build cart object for datalayer from selected flights list
+function buildCartFromSelectedFlights(flights) {
+  const products = {};
+  let subTotal = 0;
+  (flights || []).forEach((f) => {
+    const id = f.id || `trip-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const price = Number(f.price) || 0;
+    const name = `${f.fromName || f.from} (${f.from}) to ${f.toName || f.to} (${f.to})`;
+    products[id] = {
+      id,
+      to: f.to || '',
+      from: f.from || '',
+      name,
+      image: f.image || '',
+      price,
+      arrival: f.arrivalTime || '',
+      category: 'flight',
+      departure: f.departureTime || '',
+      sku: id,
+      quantity: 1,
+    };
+    subTotal += price;
+  });
+  const productCount = flights.length;
+  return {
+    products,
+    productCount,
+    subTotal,
+    total: subTotal,
+  };
+}
+
+// Update datalayer with cart and latest string vars; persists via updateDataLayer (localStorage)
+function updateDataLayerWithSelectedFlights(latestFlight) {
+  if (typeof window.updateDataLayer !== 'function') return;
+  const selected = getSelectedFlights();
+  const cart = buildCartFromSelectedFlights(selected);
+  const updates = {
+    cart,
+    // String-only vars: latest selected flight only
+    from: latestFlight?.from || '',
+    to: latestFlight?.to || '',
+    flightNumber: latestFlight?.id || '',
+    class: latestFlight?.class || '',
+  };
+  window.updateDataLayer(updates, true);
+}
+
+// Handle flight selection: add to trip, update datalayer (and persist), then go to checkout
 function handleFlightSelect(flight) {
   const fullFlight = {
     ...flight,
@@ -318,6 +366,7 @@ function handleFlightSelect(flight) {
     id: flight.id || `trip-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   };
   addFlightToTrip(fullFlight);
+  updateDataLayerWithSelectedFlights(fullFlight);
   window.location.href = getCheckoutPath();
 }
 
@@ -1048,6 +1097,11 @@ export default async function decorate(block) {
     const flights = SAMPLE_FLIGHTS[route] || [];
     displayFlightResults(flights, urlFrom, urlTo, urlDate || config.defaultDate, config);
     addBookNowBar(block);
+    // Sync datalayer when user has previously selected flights (this path returns next)
+    const selectedFromUrl = getSelectedFlights();
+    if (selectedFromUrl.length > 0) {
+      updateDataLayerWithSelectedFlights(selectedFromUrl[selectedFromUrl.length - 1]);
+    }
     return;
   }
   
@@ -1179,5 +1233,10 @@ export default async function decorate(block) {
   });
   block.appendChild(resultsList);
   addBookNowBar(block);
+  // Sync datalayer when user has previously selected flights (authorable flight items path)
+  const selected = getSelectedFlights();
+  if (selected.length > 0) {
+    updateDataLayerWithSelectedFlights(selected[selected.length - 1]);
+  }
 }
 

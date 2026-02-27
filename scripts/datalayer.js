@@ -96,6 +96,9 @@ function getInitialDataLayerFromDataElements() {
       category: '',
     },
     cart: {
+      products: {},
+      productCount: 0,
+      subTotal: 0,
       total: 0,
     },
     to: 'TQO',
