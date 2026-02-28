@@ -1,7 +1,20 @@
 import { readBlockConfig } from "../../scripts/aem.js";
 
+function applyButtonConfigToSubmitButton(block, config) {
+  const submitButton = block.querySelector("form button[type='submit']");
+  if (!submitButton) return;
+  const eventType = config.buttoneventtype ?? config['button-event-type'];
+  if (eventType && String(eventType).trim()) submitButton.dataset.buttonEventType = String(eventType).trim();
+  const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
+  if (webhookUrl && String(webhookUrl).trim()) submitButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
+  const formId = config.buttonformid ?? config['button-form-id'];
+  if (formId && String(formId).trim()) submitButton.dataset.buttonFormId = String(formId).trim();
+  const buttonData = config.buttondata ?? config['button-data'];
+  if (buttonData && String(buttonData).trim()) submitButton.dataset.buttonData = String(buttonData).trim();
+}
+
 export default async function decorate(block) {
-  readBlockConfig(block); // ensure config is read before we replace block
+  const config = readBlockConfig(block) || {};
   /* Hide button config rows on published/live, same as hero/cards */
   [...block.children].forEach((row) => { row.style.display = 'none'; });
 
@@ -105,6 +118,7 @@ export default async function decorate(block) {
 
   // Wait for form to be fully rendered before attaching listeners
   setTimeout(() => {
+    applyButtonConfigToSubmitButton(block, config);
     attachDataLayerUpdaters(block);
     prePopulateFormFromDataLayer(block);
     attachFormSubmitHandler(block);
@@ -198,11 +212,13 @@ function attachFormSubmitHandler(block) {
         JSON.stringify(registrationData)
       );
 
-      // Dispatch registration success event
-      const registrationEvent = new CustomEvent("registration", {
-        bubbles: true,
-      });
-      document.dispatchEvent(registrationEvent);
+
+      // If button has an authored event type, fire it (for Launch, same pattern as flight-search)
+      const submitButton = form.querySelector("button[type='submit']");
+      const authoredEventType = submitButton?.dataset?.buttonEventType?.trim();
+      if (authoredEventType) {
+        document.dispatchEvent(new CustomEvent(authoredEventType, { bubbles: true }));
+      }
 
       // Show success message briefly before redirect
       showSuccessMessage(

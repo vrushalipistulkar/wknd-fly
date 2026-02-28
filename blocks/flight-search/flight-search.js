@@ -183,11 +183,25 @@ function createDatePicker(selectedDate, id) {
 const DEFAULT_FROM = 'WAW';
 const DEFAULT_TO = 'TQO';
 
+// Fire a custom event (for Launch) when button has an event type – same pattern as page-view / custom-events.js
+function fireButtonCustomEventIfConfigured(submitter) {
+  const eventType = submitter?.dataset?.buttonEventType?.trim();
+  if (!eventType) return;
+  if (typeof window.updateDataLayer === 'function') {
+    updateFlightSearchDataLayer();
+  }
+  document.dispatchEvent(new CustomEvent(eventType, { bubbles: true }));
+}
+
 // Create search form
 function createFlightSearchForm(fromDefault = DEFAULT_FROM, toDefault = DEFAULT_TO) {
   const form = createElement('form', 'flight-search-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const submitter = e.submitter;
+    if (submitter?.dataset?.buttonEventType) {
+      fireButtonCustomEventIfConfigured(submitter);
+    }
     handleSearch();
   });
   

@@ -8,8 +8,21 @@ const PROFILE_API_CONFIG = {
   sandboxName: "public-luma",
 };
 
+function applyButtonConfigToSubmitButton(block, config) {
+  const submitButton = block.querySelector("form button[type='submit']");
+  if (!submitButton) return;
+  const eventType = config.buttoneventtype ?? config['button-event-type'];
+  if (eventType && String(eventType).trim()) submitButton.dataset.buttonEventType = String(eventType).trim();
+  const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
+  if (webhookUrl && String(webhookUrl).trim()) submitButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
+  const formId = config.buttonformid ?? config['button-form-id'];
+  if (formId && String(formId).trim()) submitButton.dataset.buttonFormId = String(formId).trim();
+  const buttonData = config.buttondata ?? config['button-data'];
+  if (buttonData && String(buttonData).trim()) submitButton.dataset.buttonData = String(buttonData).trim();
+}
+
 export default async function decorate(block) {
-  readBlockConfig(block); // ensure config is read before we replace block
+  const config = readBlockConfig(block) || {};
   /* Hide button config rows on published/live, same as hero/cards */
   [...block.children].forEach((row) => { row.style.display = 'none'; });
 
@@ -79,6 +92,7 @@ export default async function decorate(block) {
 
   // Wait for form to be rendered before attaching handlers
   setTimeout(() => {
+    applyButtonConfigToSubmitButton(block, config);
     attachSignInHandler(block);
     addCreateAccountLink(block, isAuthor);
   }, 100);
@@ -301,15 +315,17 @@ function attachSignInHandler(block) {
       // Set authentication flag in localStorage
       localStorage.setItem("luma_user_logged_in", "true");
 
-      // Dispatch sign-in event
-      const signInEvent = new CustomEvent("login", {
-        detail: {
-          email: enteredEmail,
-          timestamp: new Date().toISOString(),
-        },
-        bubbles: true,
-      });
-      document.dispatchEvent(signInEvent);
+      // Update dataLayer before firing custom event (same pattern as flight-search and user-registration)
+      if (typeof window.updateDataLayer === "function") {
+        window.updateDataLayer({ personalEmail: { address: enteredEmail } });
+      }
+
+      // If button has an authored event type, fire it (for Launch, same pattern as flight-search)
+      const submitBtn = form.querySelector("button[type='submit']");
+      const authoredEventType = submitBtn?.dataset?.buttonEventType?.trim();
+      if (authoredEventType) {
+        document.dispatchEvent(new CustomEvent(authoredEventType, { bubbles: true }));
+      }
 
       // Show success message
       showSuccessMessage(form, "Sign-in successful! Redirecting...");
