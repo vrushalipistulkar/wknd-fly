@@ -2,7 +2,23 @@
  * Join Us block – same pattern as sign-in: adaptive form definition + form module.
  * Form: JOIN WKND FLY CLUB heading, First Name, Last Name, Email, Phone, consent toggle, JOIN US button. All optional.
  * On submit, show green success popup: "Thank you for joining WKND Fly Club..."
+ * Button config (event type, webhook, form id, data) is authorable; custom event fired on success for Launch.
  */
+
+import { readBlockConfig } from "../../scripts/aem.js";
+
+function applyButtonConfigToSubmitButton(block, config) {
+  const submitButton = block.querySelector("form button[type='submit']");
+  if (!submitButton) return;
+  const eventType = config.buttoneventtype ?? config['button-event-type'];
+  if (eventType && String(eventType).trim()) submitButton.dataset.buttonEventType = String(eventType).trim();
+  const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
+  if (webhookUrl && String(webhookUrl).trim()) submitButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
+  const formId = config.buttonformid ?? config['button-form-id'];
+  if (formId && String(formId).trim()) submitButton.dataset.buttonFormId = String(formId).trim();
+  const buttonData = config.buttondata ?? config['button-data'];
+  if (buttonData && String(buttonData).trim()) submitButton.dataset.buttonData = String(buttonData).trim();
+}
 
 function showSuccessPopup() {
   const overlay = document.createElement('div');
@@ -23,6 +39,9 @@ function showSuccessPopup() {
 }
 
 export default async function decorate(block) {
+  const config = readBlockConfig(block) || {};
+  [...block.children].forEach((row) => { row.style.display = 'none'; });
+
   // Build Adaptive Form definition for Join Us (same pattern as sign-in)
   const formDef = {
     id: 'join-us',
@@ -110,13 +129,28 @@ export default async function decorate(block) {
   const formModule = await import('../form/form.js');
   await formModule.default(formContainer);
 
-  // After form is rendered, attach submit handler for success popup
+  // After form is rendered, apply button config and attach submit handler
   setTimeout(() => {
+    applyButtonConfigToSubmitButton(block, config);
     const form = block.querySelector('form');
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
+        const email = form.querySelector('input[name="email"]')?.value?.trim() || '';
+        const firstName = form.querySelector('input[name="firstName"]')?.value?.trim() || '';
+        const lastName = form.querySelector('input[name="lastName"]')?.value?.trim() || '';
+        if (typeof window.updateDataLayer === 'function') {
+          window.updateDataLayer({
+            personalEmail: { address: email },
+            person: { name: { firstName, lastName } },
+          });
+        }
         showSuccessPopup();
+        const submitButton = form.querySelector("button[type='submit']");
+        const authoredEventType = submitButton?.dataset?.buttonEventType?.trim();
+        if (authoredEventType) {
+          document.dispatchEvent(new CustomEvent(authoredEventType, { bubbles: true }));
+        }
       });
     }
   }, 100);

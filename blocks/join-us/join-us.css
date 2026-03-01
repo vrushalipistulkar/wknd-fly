@@ -231,3 +231,17 @@ main .join-us form {
   display: block;
   padding: 20px;
 }
+
+/* Hide button config fields so they don't appear in HTML (same as user-registration/sign-in) */
+.join-us [data-aue-prop="buttoneventtype"],
+.join-us [data-aue-prop="buttonwebhookurl"],
+.join-us [data-aue-prop="buttonformid"],
+.join-us [data-aue-prop="buttondata"] {
+  display: none !important;
+}
+.join-us div:has(> [data-aue-prop="buttoneventtype"]),
+.join-us div:has(> [data-aue-prop="buttonwebhookurl"]),
+.join-us div:has(> [data-aue-prop="buttonformid"]),
+.join-us div:has(> [data-aue-prop="buttondata"]) {
+  display: none !important;
+}
