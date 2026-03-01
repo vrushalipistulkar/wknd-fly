@@ -253,63 +253,63 @@ function attachSignInHandler(block) {
     }
 
     // If localStorage doesn't have valid email, check via API as fallback
-    if (!registeredEmail || !isValidEmail(registeredEmail)) {
-      console.log("LocalStorage check failed, trying API fallback...");
+    // if (!registeredEmail || !isValidEmail(registeredEmail)) {
+    //   console.log("LocalStorage check failed, trying API fallback...");
 
-      // Show loading state
-      const submitButton = form.querySelector('button[type="submit"]');
-      const originalButtonText = submitButton.textContent;
-      submitButton.disabled = true;
-      submitButton.textContent = "Checking...";
+    //   // Show loading state
+    //   const submitButton = form.querySelector('button[type="submit"]');
+    //   const originalButtonText = submitButton.textContent;
+    //   submitButton.disabled = true;
+    //   submitButton.textContent = "Checking...";
 
-      try {
-        const { exists, profile } = await checkProfileViaAPI(enteredEmail);
+    //   try {
+    //     const { exists, profile } = await checkProfileViaAPI(enteredEmail);
 
-        // Restore button state
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
+    //     // Restore button state
+    //     submitButton.disabled = false;
+    //     submitButton.textContent = originalButtonText;
 
-        if (!exists || !profile) {
-          showErrorMessage(
-            form,
-            "No account found. Please create an account first."
-          );
-          return;
-        }
+    //     if (!exists || !profile) {
+    //       showErrorMessage(
+    //         form,
+    //         "No account found. Please create an account first."
+    //       );
+    //       return;
+    //     }
 
-        // Profile found via API, proceed with login
-        console.log("Profile found via API:", profile);
-      } catch (error) {
-        // Restore button state
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
+    //     // Profile found via API, proceed with login
+    //     console.log("Profile found via API:", profile);
+    //   } catch (error) {
+    //     // Restore button state
+    //     submitButton.disabled = false;
+    //     submitButton.textContent = originalButtonText;
 
-        console.error("API fallback error:", error);
-        showErrorMessage(
-          form,
-          "No account found. Please create an account first."
-        );
-        return;
-      }
-    } else {
-      // LocalStorage has valid email, check if it matches
-      // Debug logging (can be removed later)
-      console.log("Sign-in validation:", {
-        entered: enteredEmail,
-        registered: registeredEmail,
-        match: enteredEmail.toLowerCase() === registeredEmail.toLowerCase(),
-      });
+    //     console.error("API fallback error:", error);
+    //     showErrorMessage(
+    //       form,
+    //       "No account found. Please create an account first."
+    //     );
+    //     return;
+    //   }
+    // } else {
+    //   // LocalStorage has valid email, check if it matches
+    //   // Debug logging (can be removed later)
+    //   console.log("Sign-in validation:", {
+    //     entered: enteredEmail,
+    //     registered: registeredEmail,
+    //     match: enteredEmail.toLowerCase() === registeredEmail.toLowerCase(),
+    //   });
 
-      // Check if entered email matches registered email (case-insensitive)
-      if (enteredEmail.toLowerCase() !== registeredEmail.toLowerCase()) {
-        showErrorMessage(
-          form,
-          "Email not found. Please check your email or create an account."
-        );
-        emailInput.focus();
-        return;
-      }
-    }
+    //   // Check if entered email matches registered email (case-insensitive)
+    //   if (enteredEmail.toLowerCase() !== registeredEmail.toLowerCase()) {
+    //     showErrorMessage(
+    //       form,
+    //       "Email not found. Please check your email or create an account."
+    //     );
+    //     emailInput.focus();
+    //     return;
+    //   }
+    // }
 
     // Sign-in successful - Load user data from registration
     try {
