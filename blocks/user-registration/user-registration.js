@@ -229,10 +229,8 @@ function attachFormSubmitHandler(block) {
         JSON.stringify(registrationData)
       );
 
-      // Trigger Launch Registration rule (Direct Call identifier "registration")
-      if (typeof window._satellite !== "undefined" && typeof window._satellite.track === "function") {
-        window._satellite.track("registration");
-      }
+      // Trigger Launch Registration rule via Custom Event (rule must have Custom Event, type "registration")
+      document.dispatchEvent(new CustomEvent("registration", { bubbles: true }));
 
       // Show success message briefly before redirect
       showSuccessMessage(
