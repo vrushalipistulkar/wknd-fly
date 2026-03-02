@@ -185,7 +185,7 @@ function getInitialDataLayerFromDataElements() {
       identification: {
         core: {
           ecid: '',
-          email: '',
+          email: null,
           loyaltyId: '',
         },
       },
