@@ -1,10 +1,8 @@
 // Flights Block - Displays flight search results (GraphQL CF + fallback to sample data)
-import { getMetadata } from '../../scripts/aem.js';
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
-import { getHostname } from '../../scripts/utils.js';
 
-const GRAPHQL_FLIGHTS_QUERY = '/graphql/execute.json/ref-demo-eds/GetFlightDetailsFromFolder';
-const GRAPHQL_FLIGHTS_BY_FROM_TO = '/graphql/execute.json/ref-demo-eds/GetFlightsByFromTo';
+const AUTHOR_GRAPHQL_BASE = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list';
+const PUBLISH_GRAPHQL_BASE = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/luma-zoltar?environment=p165802-e1765367&endpoint=flight-details-list';
 const DEFAULT_CF_FOLDER_PATH = '/content/dam/wknd-sky/en/fragments/flight-details';
 
 // Sample airport data (shared with flight-search)
@@ -100,7 +98,51 @@ const SAMPLE_FLIGHTS = {
 // Trip / checkout: persist selected flights across pages (sessionStorage)
 const TRIP_STORAGE_KEY = 'wknd-fly-selected-flights';
 
-const WRAPPER_SERVICE_URL = 'https://3635370-refdemoapigateway-stage.adobeioruntime.net/api/v1/web/ref-demo-api-gateway/fetch-cf';
+// Map destination URL slug (e.g. /en/destinations/mexico) to airport code for GraphQL
+const DESTINATION_SLUG_TO_CODE = {
+  mexico: 'TQO',
+  tulum: 'TQO',
+  cancun: 'CUN',
+  montego: 'MBJ',
+  montegobay: 'MBJ',
+  london: 'LHR',
+  paris: 'CDG',
+  amsterdam: 'AMS',
+  warsaw: 'WAW',
+  newyork: 'JFK',
+  tokyo: 'HND',
+  delhi: 'DEL',
+  berlin: 'TXL',
+  chicago: 'ORD',
+  lasvegas: 'LAS',
+  sanfrancisco: 'SFR',
+};
+
+function getDestinationCodeFromPath() {
+  const pathname = (typeof window !== 'undefined' && window.location.pathname) || '';
+  const match = pathname.match(/\/destinations\/([^/]+)/i);
+  if (!match) return '';
+  const slug = (match[1] || '').toLowerCase().replace(/[- ]/g, '');
+  const code = DESTINATION_SLUG_TO_CODE[slug];
+  if (code) return code;
+  const byCity = AIRPORTS.find(
+    (a) => a.city.toLowerCase().replace(/[- ]/g, '') === slug || a.code.toLowerCase() === slug
+  );
+  return byCity ? byCity.code : '';
+}
+
+function resolveFromAndTo() {
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  let from = (urlParams.get('from') || '').trim().toUpperCase();
+  let to = (urlParams.get('to') || '').trim().toUpperCase();
+  if (from && to) return { from, to };
+  if (!from && typeof window !== 'undefined' && window.getDataLayerProperty) {
+    const dlFrom = window.getDataLayerProperty('from');
+    from = (dlFrom && String(dlFrom).trim().toUpperCase()) || '';
+  }
+  if (!to) to = getDestinationCodeFromPath();
+  return { from, to };
+}
 
 function mapGraphQLItemToFlight(item, isAuthor) {
   const imageRef = item?.image || item?.bannerimage;
@@ -128,98 +170,16 @@ function mapGraphQLItemToFlight(item, isAuthor) {
 }
 
 async function fetchFlightsFromGraphQL(from, to, config) {
-  const folderPath = config?.cfFolderPath?.trim() || DEFAULT_CF_FOLDER_PATH;
   const fromCode = (from || '').toUpperCase();
   const toCode = (to || '').toUpperCase();
-  const route = `${fromCode}-${toCode}`;
+  const isAuthor = isAuthorEnvironment();
   try {
-    const hostnameFromPlaceholders = await getHostname();
-    const hostname = hostnameFromPlaceholders || getMetadata('hostname');
-    const aemauthorurl = getMetadata('authorurl') || '';
-    const aempublishurl = hostname?.replace('author', 'publish')?.replace(/\/$/, '') || '';
-    const isAuthor = isAuthorEnvironment();
-    const decodedPath = decodeURIComponent(folderPath);
-
-    // Prefer GetFlightsByFromTo: returns array filtered by from/to from GraphQL
-    const byFromToUrl = `${GRAPHQL_FLIGHTS_BY_FROM_TO};path=${encodeURIComponent(decodedPath)};from=${encodeURIComponent(fromCode)};to=${encodeURIComponent(toCode)};ts=${Date.now()}`;
-    const requestConfig = isAuthor
-      ? {
-          url: `${aemauthorurl}${byFromToUrl}`,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      : {
-          url: WRAPPER_SERVICE_URL,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            graphQLPath: `${aempublishurl}${GRAPHQL_FLIGHTS_BY_FROM_TO}`,
-            cfPath: decodedPath,
-            from: fromCode,
-            to: toCode,
-            variation: `main;ts=${Date.now()}`,
-          }),
-        };
-
-    const response = await fetch(requestConfig.url, {
-      method: requestConfig.method,
-      headers: requestConfig.headers,
-      ...(requestConfig.body && { body: requestConfig.body }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return fetchFlightsFromGraphQLFallback(from, to, config);
-      }
-      return [];
-    }
-    const payload = await response.json();
-
-    const items =
-      payload?.data?.flight_details_List?.items ||
-      payload?.data?.flightDetailsList?.items ||
-      payload?.data?.flightDetails_List?.items ||
-      [];
-    const flights = items.map((it) => mapGraphQLItemToFlight(it, isAuthor));
-    return flights;
-  } catch (e) {
-    console.warn('Flights GraphQL fetch failed, trying fallback:', e);
-    return fetchFlightsFromGraphQLFallback(from, to, config);
-  }
-}
-
-async function fetchFlightsFromGraphQLFallback(from, to, config) {
-  const folderPath = config?.cfFolderPath?.trim() || DEFAULT_CF_FOLDER_PATH;
-  const route = `${(from || '').toUpperCase()}-${(to || '').toUpperCase()}`;
-  try {
-    const hostnameFromPlaceholders = await getHostname();
-    const hostname = hostnameFromPlaceholders || getMetadata('hostname');
-    const aemauthorurl = getMetadata('authorurl') || '';
-    const aempublishurl = hostname?.replace('author', 'publish')?.replace(/\/$/, '') || '';
-    const isAuthor = isAuthorEnvironment();
-    const decodedPath = decodeURIComponent(folderPath);
-
-    const requestConfig = isAuthor
-      ? {
-          url: `${aemauthorurl}${GRAPHQL_FLIGHTS_QUERY};path=${decodedPath};ts=${Date.now()}`,
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      : {
-          url: WRAPPER_SERVICE_URL,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            graphQLPath: `${aempublishurl}${GRAPHQL_FLIGHTS_QUERY}`,
-            cfPath: decodedPath,
-            variation: `main;ts=${Date.now()}`,
-          }),
-        };
-
-    const response = await fetch(requestConfig.url, {
-      method: requestConfig.method,
-      headers: requestConfig.headers,
-      ...(requestConfig.body && { body: requestConfig.body }),
+    const url = isAuthor
+      ? `${AUTHOR_GRAPHQL_BASE};from=${encodeURIComponent(fromCode)};to=${encodeURIComponent(toCode)};ts=${Date.now()}`
+      : `${PUBLISH_GRAPHQL_BASE}&from=${encodeURIComponent(fromCode)}&to=${encodeURIComponent(toCode)}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) return [];
     const payload = await response.json();
@@ -228,10 +188,9 @@ async function fetchFlightsFromGraphQLFallback(from, to, config) {
       payload?.data?.flightDetailsList?.items ||
       payload?.data?.flightDetails_List?.items ||
       [];
-    const flights = items.map((it) => mapGraphQLItemToFlight(it, isAuthor));
-    return flights.filter((f) => `${(f.from || '').toUpperCase()}-${(f.to || '').toUpperCase()}` === route);
+    return items.map((it) => mapGraphQLItemToFlight(it, isAuthor));
   } catch (e) {
-    console.warn('Flights GraphQL fallback failed:', e);
+    console.warn('Flights GraphQL fetch failed:', e);
     return [];
   }
 }
@@ -1208,11 +1167,9 @@ export default async function decorate(block) {
     flightImages: readImageReferences(),
   };
   
-  // Get URL parameters (priority over authorable fields)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlFrom = urlParams.get('from');
-  const urlTo = urlParams.get('to');
   const urlDate = urlParams.get('date');
+  const { from: resolvedFrom, to: resolvedTo } = resolveFromAndTo();
   
   // Preserve block structure for authoring
   block.className = 'flights';
@@ -1234,19 +1191,19 @@ export default async function decorate(block) {
     }
   });
   
-  // Check if URL parameters are present - fetch from GraphQL (CF) or fall back to sample data
-  if (urlFrom && urlTo) {
-    const route = `${urlFrom}-${urlTo}`;
+  // When both from and to are available (URL params, or datalayer + destinations path), fetch from GraphQL
+  if (resolvedFrom && resolvedTo) {
+    const route = `${resolvedFrom}-${resolvedTo}`;
     let flights = [];
     try {
-      flights = await fetchFlightsFromGraphQL(urlFrom, urlTo, config);
+      flights = await fetchFlightsFromGraphQL(resolvedFrom, resolvedTo, config);
     } catch (_) {
       // keep flights = []
     }
     if (flights.length === 0) {
       flights = SAMPLE_FLIGHTS[route] || [];
     }
-    displayFlightResults(flights, urlFrom, urlTo, urlDate || config.defaultDate, config);
+    displayFlightResults(flights, resolvedFrom, resolvedTo, urlDate || config.defaultDate, config);
     addBookNowBar(block);
     const selectedFromUrl = getSelectedFlights();
     if (selectedFromUrl.length > 0) {
@@ -1254,8 +1211,8 @@ export default async function decorate(block) {
     }
     return;
   }
-  
-  // No URL params - check for authorable flight items first
+
+  // No from/to resolved - check for authorable flight items first
   const children = Array.from(block.children);
   const flightItems = [];
   const processedItems = new Set(); // Track processed items to prevent duplicates
