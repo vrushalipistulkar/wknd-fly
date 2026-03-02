@@ -13,6 +13,7 @@ let _dataLayer = null;
 const STORAGE_KEY = 'wkndfly_dataLayer';
 const STORAGE_TIMESTAMP_KEY = 'wkndfly_dataLayer_timestamp';
 const STORAGE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+const ECID_SESSION_KEY = 'com.adobe.reactor.dataElements.ECID';
 
 function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
@@ -37,6 +38,27 @@ function deepMerge(target, source) {
     });
   }
   return output;
+}
+
+function getEcidFromSession() {
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      const ecid = sessionStorage.getItem(ECID_SESSION_KEY);
+      return (ecid && String(ecid).trim()) || '';
+    }
+  } catch (e) {
+    // ignore
+  }
+  return '';
+}
+
+function applyEcidToDataLayer() {
+  if (!_dataLayer || !_dataLayer._demosystem4) return;
+  const ecid = getEcidFromSession();
+  if (!ecid) return;
+  if (!_dataLayer._demosystem4.identification) _dataLayer._demosystem4.identification = {};
+  if (!_dataLayer._demosystem4.identification.core) _dataLayer._demosystem4.identification.core = {};
+  _dataLayer._demosystem4.identification.core.ecid = ecid;
 }
 
 function dispatchDataLayerEvent(eventType = 'initialized') {
@@ -162,7 +184,17 @@ function getInitialDataLayerFromDataElements() {
     _demosystem4: {
       identification: {
         core: {
+          ecid: '',
+          email: '',
           loyaltyId: '',
+        },
+      },
+      demoEnvironment: {
+        brandName: 'wknd-fly',
+      },
+      interactionDetails: {
+        core: {
+          channel: 'web',
         },
       },
     },
@@ -196,6 +228,8 @@ export function buildCustomDataLayer() {
     } else {
       _dataLayer = getInitialDataLayerFromDataElements();
     }
+
+    applyEcidToDataLayer();
 
     if (!_dataLayer.page) _dataLayer.page = {};
     _dataLayer.page.title = document.title || _dataLayer.page.title;
