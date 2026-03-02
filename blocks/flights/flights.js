@@ -2,8 +2,7 @@
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
 
 const AUTHOR_GRAPHQL_BASE = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list';
-const PUBLISH_GRAPHQL_BASE = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/luma-zoltar?environment=p165802-e1765367&endpoint=flight-details-list';
-const DEFAULT_CF_FOLDER_PATH = '/content/dam/wknd-sky/en/fragments/flight-details';
+const PUBLISH_GRAPHQL_BASE = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/luma-zoltar?environment=p159983-e1710854&endpoint=flight-details-list';
 
 // Sample airport data (shared with flight-search)
 const AIRPORTS = [
