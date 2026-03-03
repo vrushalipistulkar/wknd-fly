@@ -198,8 +198,7 @@ main > .section:has(.application-form-block) > div {
   justify-content: flex-end;
 }
 
-.application-form-block .application-form-wizard .submit-wrapper button,
-.application-form-block .application-form-submit-btn {
+.application-form-block .application-form-wizard .submit-wrapper button{
   width: auto !important;
   padding: 0.75rem 1.5rem !important;
   background: var(--application-form-teal) !important;
@@ -339,8 +338,7 @@ main > .section:has(.application-form-block) > div {
 }
 
 .application-form-submit-btn {
-  padding: 0.875rem 2rem;
-  background: var(--link-color, #0563c1);
+
   color: #fff;
   border: none;
   border-radius: 8px;
