@@ -335,7 +335,7 @@ function renderTripTotal(sidebar, total) {
           ticketNumber: ticketNum,
         }, true);
       }
-      window.location.href = getConfirmationPath();
+      setTimeout(() => { window.location.href = getConfirmationPath(); }, 2000);
     };
   }
   sidebar.appendChild(box);

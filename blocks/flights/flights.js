@@ -545,7 +545,7 @@ function handleFlightSelect(flight) {
   document.dispatchEvent(new CustomEvent('flight.selected', { bubbles: true }));
   // Restore full dataLayer for checkout/confirmation before redirect
   updateDataLayerWithSelectedFlights(fullFlight);
-  window.location.href = getCheckoutPath();
+  setTimeout(() => { window.location.href = getCheckoutPath(); }, 2000);
 }
 
 // Create a default flight item structure in the DOM (editable)

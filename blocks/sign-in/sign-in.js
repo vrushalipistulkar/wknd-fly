@@ -339,10 +339,10 @@ function attachSignInHandler(block) {
       // Show success message
       showSuccessMessage(form, "Sign-in successful! Redirecting...");
 
-      // Redirect to home page with language prefix
+      // Redirect to home page after delay (allows custom/analytics calls to complete)
       setTimeout(() => {
         window.location.href = "/";
-      }, 1500);
+      }, 2000);
     } catch (error) {
       console.error("Sign-in error:", error);
       showErrorMessage(form, "Sign-in failed. Please try again.");

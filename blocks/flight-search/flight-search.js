@@ -344,7 +344,7 @@ function handleSearch() {
   
   const queryString = params.toString();
   const url = queryString ? `${flightsPath}?${queryString}` : flightsPath;
-  window.location.href = url;
+  setTimeout(() => { window.location.href = url; }, 2000);
 }
 
 
