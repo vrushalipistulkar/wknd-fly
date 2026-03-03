@@ -238,10 +238,10 @@ function attachFormSubmitHandler(block) {
         "Registration successful! Redirecting to sign-in..."
       );
 
-      // Redirect to sign-in page after a short delay
+      // Redirect to sign-in page after delay (allows custom/analytics calls to complete)
       setTimeout(() => {
         window.location.href = "/en/sign-in";
-      }, 1500);
+      }, 2000);
     } catch (error) {
       console.error("Registration error:", error);
       showErrorMessage(form, "Registration failed. Please try again.");

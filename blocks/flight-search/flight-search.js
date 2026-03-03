@@ -344,7 +344,7 @@ function handleSearch() {
   
   const queryString = params.toString();
   const url = queryString ? `${flightsPath}?${queryString}` : flightsPath;
-  window.location.href = url;
+  setTimeout(() => { window.location.href = url; }, 2000);
 }
 
 
@@ -357,14 +357,18 @@ function updateFlightSearchDataLayer() {
   const businessTrip = document.getElementById('business-trip');
   const businessClass = document.getElementById('business-class');
   const travellingChildren = document.getElementById('travelling-children');
+  const dateVal = dateInput?.value?.trim();
+  const todayYYYYMMDD = typeof window.getDataLayerDate === 'function'
+    ? window.getDataLayerDate(new Date().toISOString().slice(0, 10))
+    : '';
   const updates = {
     from: fromInput?.value?.trim() || '',
     to: toInput?.value?.trim() || '',
-    date: dateInput?.value || '',
+    date: (typeof window.getDataLayerDate === 'function' ? (window.getDataLayerDate(dateVal) || todayYYYYMMDD) : (dateVal || todayYYYYMMDD)) || '',
     options: {
-      businessTrip: businessTrip?.checked ?? false,
-      businessClass: businessClass?.checked ?? false,
-      familyTrip: travellingChildren?.checked ?? false,
+      businessTrip: (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(businessTrip?.checked) : (businessTrip?.checked ? 'y' : 'n')),
+      businessClass: (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(businessClass?.checked) : (businessClass?.checked ? 'y' : 'n')),
+      familyTrip: (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(travellingChildren?.checked) : (travellingChildren?.checked ? 'y' : 'n')),
     },
   };
   window.updateDataLayer(updates, true);

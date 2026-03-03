@@ -133,14 +133,20 @@ function getInitialDataLayerFromDataElements() {
     },
     to: 'TQO',
     from: 'WAW',
-    date: '',
+    date: (() => {
+      const d = new Date();
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(d.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${day}T00:00:00Z`;
+    })(),
     bookingReference: '',
-    flightLength: '',
+    flightLength: 0,
     flightNumber: '',
     ticketNumber: '',
     itineraryNumber: '',
     class: '',
-    upgradeWithPoints: false,
+    upgradeWithPoints: 'n',
     travelPreferences: {
       seat: '',
       seatSection: '',
@@ -150,13 +156,13 @@ function getInitialDataLayerFromDataElements() {
       name: '',
     },
     options: {
-      businessClass: false,
-      businessTrip: false,
-      familyTrip: false,
-      payWithPoints: false,
+      businessClass: 'n',
+      businessTrip: 'n',
+      familyTrip: 'n',
+      payWithPoints: 'n',
     },
     partnerData: {
-      Presence_of_premimum_credit_card: false,
+      Presence_of_premimum_credit_card: 'n',
       PandemicResponseNewTravelFlexibleScale: '',
       VacationSpenders: 87,
       PartnerID: "Partner456",
@@ -168,8 +174,8 @@ function getInitialDataLayerFromDataElements() {
       cvv: '',
       cardNumber: '',
     },
-    smsConsent: false,
-    loyaltyConsent: false,
+    smsConsent: 'n',
+    loyaltyConsent: 'n',
     person: {
       name: {
         firstName: '',
@@ -178,7 +184,7 @@ function getInitialDataLayerFromDataElements() {
       },
       gender: '',
       birthDate: '',
-      isMember: false,
+      isMember: 'n',
     },
     consents: {},
     homeAddress: {
@@ -339,6 +345,49 @@ window.getDataLayerQueueStatus = function () {
     dataLayerQueueLength: window._dataLayerQueue ? window._dataLayerQueue.length : 0,
     dataLayerQueue: window._dataLayerQueue || [],
   };
+};
+
+// Normalize boolean/checkbox/radio to Oxygen pattern: 'y' or 'n' for dataLayer/XDM
+window.getDataLayerYesNo = function (val) {
+  if (val === true || val === 'y' || val === 'yes' || val === 1) return 'y';
+  if (val === false || val === 'n' || val === 'no' || val === 0 || val === '' || val == null) return 'n';
+  return String(val).toLowerCase() === 'y' || String(val).toLowerCase() === 'yes' ? 'y' : 'n';
+};
+
+// Normalize flight class to AEP enum (first class | business class | premium economy | economy)
+window.getDataLayerFlightClass = function (val) {
+  if (val == null || val === '') return '';
+  const v = String(val).trim().toLowerCase();
+  if (v === 'standard') return 'economy';
+  if (v === 'business') return 'business class';
+  if (v === 'first class' || v === 'first') return 'first class';
+  if (v === 'premium economy') return 'premium economy';
+  if (v === 'economy') return 'economy';
+  return 'economy';
+};
+
+// Normalize flight length to integer for dataLayer/XDM (minutes)
+window.getDataLayerFlightLength = function (val) {
+  if (val == null || val === '') return 0;
+  const n = typeof val === 'number' ? val : parseInt(String(val).trim(), 10);
+  return Number.isNaN(n) ? 0 : Math.max(0, Math.floor(n));
+};
+
+// Normalize date to ISO 8601 for dataLayer/XDM (e.g. "2026-03-10T18:30:00Z" — no milliseconds)
+window.getDataLayerDate = function (val) {
+  if (val == null || val === '') return '';
+  const s = String(val).trim();
+  if (!s) return '';
+  const stripMs = (iso) => (typeof iso === 'string' ? iso.replace(/\.\d{3}Z$/i, 'Z') : iso);
+  if (s.indexOf('T') !== -1) return stripMs(s); // already ISO-like
+  const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[1]}-${match[2]}-${match[3]}T00:00:00Z`;
+  try {
+    const d = new Date(s);
+    return Number.isNaN(d.getTime()) ? '' : stripMs(d.toISOString());
+  } catch {
+    return '';
+  }
 };
 
 buildCustomDataLayer();

@@ -189,8 +189,9 @@ function updateDataLayerFromCheckoutForm(block) {
   if (typeof window.updateDataLayer !== 'function') return;
   const v = (name) => getFieldValue(block, name);
 
+  const yesNo = (x) => (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(x) : (x ? 'y' : 'n'));
   const updates = {
-    upgradeWithPoints: v('upgrade-points') === true,
+    upgradeWithPoints: yesNo(v('upgrade-points')),
     travelPreferences: {
       seat: v('seat') || '',
       seatSection: v('section') || '',
@@ -204,11 +205,11 @@ function updateDataLayerFromCheckoutForm(block) {
       },
       gender: v('gender') || '',
       birthDate: v('birthDate') || '',
-      isMember: v('wknd-club') === true,
+      isMember: yesNo(v('wknd-club')),
     },
     personalEmail: { address: v('email') || '' },
     mobilePhone: { number: v('phone') || '' },
-    smsConsent: v('sms') === true,
+    smsConsent: yesNo(v('sms')),
     payment: {
       nameOnCard: v('nameOnCard') || '',
       cardExpiration: v('expiration') || '',
@@ -217,7 +218,7 @@ function updateDataLayerFromCheckoutForm(block) {
     },
     consents: {
       marketing: {
-        email: { val: v('promo') === true },
+        email: { val: yesNo(v('promo')) },
       },
     },
   };
@@ -334,7 +335,7 @@ function renderTripTotal(sidebar, total) {
           ticketNumber: ticketNum,
         }, true);
       }
-      window.location.href = getConfirmationPath();
+      setTimeout(() => { window.location.href = getConfirmationPath(); }, 2000);
     };
   }
   sidebar.appendChild(box);
