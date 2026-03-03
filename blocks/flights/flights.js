@@ -509,9 +509,9 @@ function updateDataLayerWithSelectedFlights(latestFlight) {
     from: latestFlight?.from || '',
     to: latestFlight?.to || '',
     flightNumber: latestFlight?.id || '',
-    class: latestFlight?.class || '',
-    date: getCurrentDateYYYYMMDD(),
-    flightLength: latestFlight?.flightLength ?? dl?.flightLength ?? '',
+    class: (typeof window.getDataLayerFlightClass === 'function' ? window.getDataLayerFlightClass(latestFlight?.class) : (latestFlight?.class || '')) || '',
+    date: (typeof window.getDataLayerDate === 'function' ? window.getDataLayerDate(getCurrentDateYYYYMMDD()) : getCurrentDateYYYYMMDD()) || '',
+    flightLength: (typeof window.getDataLayerFlightLength === 'function' ? window.getDataLayerFlightLength(latestFlight?.flightLength ?? dl?.flightLength) : (parseInt(latestFlight?.flightLength ?? dl?.flightLength, 10) || 0)),
   };
   window.updateDataLayer(updates, true);
 }
@@ -528,7 +528,7 @@ function updateDataLayerMinimalForFlightSelection(latestFlight) {
     flightNumber: '',
     class: '',
     date: '',
-    flightLength: '',
+    flightLength: 0,
   }, true);
 }
 

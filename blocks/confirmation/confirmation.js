@@ -91,12 +91,14 @@ export default async function decorate(block) {
       },
     };
     if (firstFlight) {
+      const dateVal = firstFlight.date;
+      const todayISO = typeof window.getDataLayerDate === 'function' ? window.getDataLayerDate(new Date().toISOString().slice(0, 10)) : '';
       updates.from = firstFlight.from || '';
       updates.to = firstFlight.to || '';
       updates.flightNumber = firstFlight.id || '';
-      updates.class = firstFlight.class || '';
-      updates.flightLength = firstFlight.flightLength || '';
-      updates.date = firstFlight.date || '';
+      updates.class = (typeof window.getDataLayerFlightClass === 'function' ? window.getDataLayerFlightClass(firstFlight.class) : (firstFlight.class || '')) || '';
+      updates.flightLength = (typeof window.getDataLayerFlightLength === 'function' ? window.getDataLayerFlightLength(firstFlight.flightLength) : (parseInt(firstFlight.flightLength, 10) || 0));
+      updates.date = (typeof window.getDataLayerDate === 'function' ? (window.getDataLayerDate(dateVal) || todayISO) : (dateVal || todayISO)) || '';
     }
     window.updateDataLayer(updates, true);
     document.dispatchEvent(new CustomEvent('flight.booking', { bubbles: true }));
