@@ -498,7 +498,7 @@ function getCurrentDateYYYYMMDD() {
 }
 
 // Update datalayer with cart and latest string vars; persists via updateDataLayer (localStorage)
-// Sets all fields required by XDM - Flight Selection (Reservation - Date, Flight Length, etc.)
+// Sets all fields required by XDM - Flight Selection and for checkout/confirmation.
 function updateDataLayerWithSelectedFlights(latestFlight) {
   if (typeof window.updateDataLayer !== 'function') return;
   const selected = getSelectedFlights();
@@ -516,6 +516,22 @@ function updateDataLayerWithSelectedFlights(latestFlight) {
   window.updateDataLayer(updates, true);
 }
 
+// Minimal dataLayer for flight.selection XDM only (no flightNumber, class, date, flightLength, so reservationSearch stays empty).
+function updateDataLayerMinimalForFlightSelection(latestFlight) {
+  if (typeof window.updateDataLayer !== 'function') return;
+  const selected = getSelectedFlights();
+  const cart = buildCartFromSelectedFlights(selected);
+  window.updateDataLayer({
+    cart,
+    from: latestFlight?.from || '',
+    to: latestFlight?.to || '',
+    flightNumber: '',
+    class: '',
+    date: '',
+    flightLength: '',
+  }, true);
+}
+
 // Handle flight selection: add to trip, update datalayer, fire Launch event (flight.selected), then go to checkout
 function handleFlightSelect(flight) {
   const fullFlight = {
@@ -524,9 +540,12 @@ function handleFlightSelect(flight) {
     id: flight.id || `trip-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   };
   addFlightToTrip(fullFlight);
-  updateDataLayerWithSelectedFlights(fullFlight);
+  // Set minimal dataLayer so Launch builds working flight.selection XDM (only from, to, cart; no extra reservation/reservationSearch fields)
+  updateDataLayerMinimalForFlightSelection(fullFlight);
   document.dispatchEvent(new CustomEvent('flight.selected', { bubbles: true }));
-  window.location.href = getCheckoutPath();
+  // Restore full dataLayer for checkout/confirmation before redirect
+  updateDataLayerWithSelectedFlights(fullFlight);
+  //window.location.href = getCheckoutPath();
 }
 
 // Create a default flight item structure in the DOM (editable)
