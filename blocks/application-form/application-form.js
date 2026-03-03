@@ -1,11 +1,15 @@
 /**
- * Application Form block – credit card (or similar) application.
- * Built like sign-in/join-us: adaptive form definition rendered by the form module,
- * with wizard layout (Back / Next) so the form is created step-by-step per site style.
- * Steps: Personal Information → Address → Employment & Income → Disclosures → Submit.
+ * Application Form block – 3-step wizard matching reference look and feel.
+ * Step 1: First name, Last name (side-by-side), Email address, Phone number.
+ * Step 2: Address, State (dropdown), ZIP code + City (side-by-side), Country (dropdown).
+ * Step 3: Date of birth, Social Security Number, Submit.
+ * Back (grey) / step indicator (dots + "n/3 step") / Next or Submit (teal).
  */
 
 import { readBlockConfig, loadCSS } from '../../scripts/aem.js';
+
+const APPLICATION_FORM_TEAL = '#0d9488';
+const APPLICATION_FORM_GREY = '#e5e7eb';
 
 function applyButtonConfigToSubmitButton(block, config) {
   const submitButton = block.querySelector("form button[type='submit']");
@@ -21,6 +25,8 @@ function applyButtonConfigToSubmitButton(block, config) {
 }
 
 function buildApplicationFormDef() {
+  const stateOptions = ['', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
+  const stateNames = ['Select...', ...stateOptions.slice(1)];
   return {
     id: 'application-form',
     fieldType: 'form',
@@ -50,12 +56,10 @@ function buildApplicationFormDef() {
             fieldType: 'panel',
             label: { value: 'Personal Information' },
             items: [
-              { id: 'firstName', name: 'firstName', fieldType: 'text-input', label: { value: 'First Name' }, properties: { colspan: 12 } },
-              { id: 'middleName', name: 'middleName', fieldType: 'text-input', label: { value: 'Middle Name' }, properties: { colspan: 12 } },
-              { id: 'lastName', name: 'lastName', fieldType: 'text-input', label: { value: 'Last Name' }, properties: { colspan: 12 } },
-              { id: 'dateOfBirth', name: 'dateOfBirth', fieldType: 'text-input', label: { value: 'Date of Birth' }, placeholder: 'MM/DD/YYYY', properties: { colspan: 12 } },
-              { id: 'email', name: 'email', fieldType: 'email', label: { value: 'Email' }, properties: { colspan: 12 } },
-              { id: 'phone', name: 'phone', fieldType: 'text-input', label: { value: 'Phone Number' }, properties: { colspan: 12 } },
+              { id: 'firstName', name: 'firstName', fieldType: 'text-input', label: { value: 'First name' }, properties: { colspan: 6 } },
+              { id: 'lastName', name: 'lastName', fieldType: 'text-input', label: { value: 'Last name' }, properties: { colspan: 6 } },
+              { id: 'email', name: 'email', fieldType: 'email', label: { value: 'Email address' }, properties: { colspan: 12 } },
+              { id: 'phone', name: 'phone', fieldType: 'text-input', label: { value: 'Phone number' }, properties: { colspan: 12 } },
             ],
           },
           {
@@ -64,79 +68,43 @@ function buildApplicationFormDef() {
             fieldType: 'panel',
             label: { value: 'Address' },
             items: [
-              { id: 'streetAddress', name: 'streetAddress', fieldType: 'text-input', label: { value: 'Street Address' }, properties: { colspan: 12 } },
-              { id: 'addressLine2', name: 'addressLine2', fieldType: 'text-input', label: { value: 'Apt / Suite' }, properties: { colspan: 12 } },
-              { id: 'city', name: 'city', fieldType: 'text-input', label: { value: 'City' }, properties: { colspan: 12 } },
-              { id: 'state', name: 'state', fieldType: 'text-input', label: { value: 'State / Province' }, properties: { colspan: 12 } },
-              { id: 'zipCode', name: 'zipCode', fieldType: 'text-input', label: { value: 'ZIP / Postal Code' }, properties: { colspan: 12 } },
+              { id: 'streetAddress', name: 'streetAddress', fieldType: 'text-input', label: { value: 'Address' }, properties: { colspan: 12 } },
+              {
+                id: 'state',
+                name: 'state',
+                fieldType: 'drop-down',
+                label: { value: 'State' },
+                enum: stateOptions,
+                enumNames: stateNames,
+                properties: { colspan: 12 },
+              },
+              { id: 'zipCode', name: 'zipCode', fieldType: 'text-input', label: { value: 'ZIP code' }, properties: { colspan: 6 } },
+              { id: 'city', name: 'city', fieldType: 'text-input', label: { value: 'City' }, properties: { colspan: 6 } },
               {
                 id: 'country',
                 name: 'country',
                 fieldType: 'drop-down',
                 label: { value: 'Country' },
                 enum: ['', 'US', 'CA', 'MX', 'GB', 'OTHER'],
-                enumNames: ['Select', 'United States', 'Canada', 'Mexico', 'United Kingdom', 'Other'],
+                enumNames: ['Select...', 'United States of America', 'Canada', 'Mexico', 'United Kingdom', 'Other'],
                 properties: { colspan: 12 },
               },
             ],
           },
           {
-            id: 'step-employment',
-            name: 'employment',
+            id: 'step-details',
+            name: 'details',
             fieldType: 'panel',
-            label: { value: 'Employment & Income' },
+            label: { value: 'Details' },
             items: [
-              {
-                id: 'employmentStatus',
-                name: 'employmentStatus',
-                fieldType: 'drop-down',
-                label: { value: 'Employment Status' },
-                enum: ['', 'employed', 'self-employed', 'retired', 'student', 'other'],
-                enumNames: ['Select', 'Employed', 'Self-Employed', 'Retired', 'Student', 'Other'],
-                properties: { colspan: 12 },
-              },
-              { id: 'employerName', name: 'employerName', fieldType: 'text-input', label: { value: 'Employer Name' }, properties: { colspan: 12 } },
-              { id: 'jobTitle', name: 'jobTitle', fieldType: 'text-input', label: { value: 'Job Title / Occupation' }, properties: { colspan: 12 } },
-              { id: 'annualIncome', name: 'annualIncome', fieldType: 'text-input', label: { value: 'Annual Income' }, placeholder: 'e.g. 75000', properties: { colspan: 12 } },
-              { id: 'otherIncome', name: 'otherIncome', fieldType: 'text-input', label: { value: 'Other Monthly Income' }, placeholder: 'e.g. 500', properties: { colspan: 12 } },
-            ],
-          },
-          {
-            id: 'step-disclosures',
-            name: 'disclosures',
-            fieldType: 'panel',
-            label: { value: 'Disclosures' },
-            items: [
-              {
-                id: 'agreeTerms',
-                name: 'agreeTerms',
-                fieldType: 'checkbox',
-                label: { value: 'I have read and agree to the Terms and Conditions and Privacy Policy' },
-                enum: ['true'],
-                properties: { colspan: 12 },
-              },
-              {
-                id: 'agreeCreditCheck',
-                name: 'agreeCreditCheck',
-                fieldType: 'checkbox',
-                label: { value: 'I authorize a credit check and verification of the information I have provided' },
-                enum: ['true'],
-                properties: { colspan: 12 },
-              },
-            ],
-          },
-          {
-            id: 'step-submit',
-            name: 'submit',
-            fieldType: 'panel',
-            label: { value: 'Submit' },
-            items: [
+              { id: 'dateOfBirth', name: 'dateOfBirth', fieldType: 'text-input', label: { value: 'Date of birth' }, placeholder: 'MM/DD/YYYY', properties: { colspan: 12 } },
+              { id: 'ssn', name: 'ssn', fieldType: 'text-input', label: { value: 'Social Security Number' }, properties: { colspan: 12 } },
               {
                 id: 'submit-application-btn',
                 name: 'submitApplication',
                 fieldType: 'button',
                 buttonType: 'submit',
-                label: { value: 'Submit Application' },
+                label: { value: 'Submit' },
                 appliedCssClassNames: 'application-form-submit-btn col-12',
               },
             ],
@@ -162,7 +130,7 @@ function collectApplicationFormData(form) {
 }
 
 function restrictNumericFields(form) {
-  const numericNames = ['phone', 'annualIncome', 'otherIncome'];
+  const numericNames = ['phone', 'ssn'];
   numericNames.forEach((name) => {
     const el = form.querySelector(`[name="${name}"]`);
     if (!el) return;
@@ -190,7 +158,7 @@ function attachApplicationFormSubmitHandler(block) {
   const form = block.querySelector('form');
   if (!form) return;
 
-  const submitSection = form.querySelector('#step-submit')?.closest('fieldset') || form.querySelector('.panel-wrapper:last-of-type');
+  const submitSection = form.querySelector('#step-details')?.closest('fieldset') || form.querySelector('.panel-wrapper:last-of-type');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -238,10 +206,35 @@ export default async function decorate(block) {
   setTimeout(() => {
     applyButtonConfigToSubmitButton(block, config);
     attachApplicationFormSubmitHandler(block);
+    setupApplicationFormStepIndicator(block);
     const form = block.querySelector('form');
     if (form) {
       restrictNumericFields(form);
       formatDateOfBirthInput(form);
     }
   }, 100);
+}
+
+function setupApplicationFormStepIndicator(block) {
+  const wizard = block.querySelector('form .wizard');
+  if (!wizard) return;
+  const totalSteps = wizard.querySelectorAll('.panel-wrapper').length;
+  const menu = wizard.querySelector('.wizard-menu-items');
+  const btnWrapper = wizard.querySelector('.wizard-button-wrapper');
+  if (!btnWrapper || totalSteps === 0) return;
+
+  const stepLabel = document.createElement('span');
+  stepLabel.className = 'application-form-step-label';
+  stepLabel.setAttribute('aria-live', 'polite');
+  function updateStepLabel() {
+    const current = wizard.querySelector('.current-wizard-step');
+    const idx = current ? (parseInt(current.dataset.index, 10) + 1) : 1;
+    stepLabel.textContent = `${idx}/${totalSteps} step`;
+  }
+  updateStepLabel();
+  wizard.addEventListener('wizard:navigate', updateStepLabel);
+
+  const nextBtn = btnWrapper.querySelector('.wizard-button-next, [id*="wizard-button-next"]');
+  if (nextBtn) btnWrapper.insertBefore(stepLabel, nextBtn);
+  else btnWrapper.appendChild(stepLabel);
 }

@@ -1,4 +1,12 @@
-/* Application Form block – credit card application with wizard (Back/Next) like sign-in adaptive form */
+/* Application Form block – 3-step wizard, clean L&F: teal Next/Submit, grey Back, dots + "n/3 step" */
+:root {
+  --application-form-teal: #0d9488;
+  --application-form-teal-hover: #0f766e;
+  --application-form-grey: #e5e7eb;
+  --application-form-grey-border: #d1d5db;
+  --application-form-label: #374151;
+}
+
 main > .section:has(.application-form-block) > div {
   max-width: 720px;
 }
@@ -10,10 +18,14 @@ main > .section:has(.application-form-block) > div {
   padding: 0 2rem 2rem;
   font-family: var(--body-font-family, system-ui, sans-serif);
   box-sizing: border-box;
+  background: #fff;
 }
 
 .application-form-block .application-form-heading {
   margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
 }
 
 .application-form-block .application-form-subtitle {
@@ -26,6 +38,132 @@ main > .section:has(.application-form-block) > div {
 .application-form-block .application-form-wrapper {
   width: 100%;
   min-width: 0;
+}
+
+/* Wizard: step menu as dots + step label */
+.application-form-block .application-form-wizard .wizard-menu-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.application-form-block .application-form-wizard .wizard-menu-item {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--application-form-grey);
+  padding: 0;
+  margin: 0;
+  text-indent: -9999px;
+  overflow: hidden;
+  border: none;
+}
+
+.application-form-block .application-form-wizard .wizard-menu-item::before {
+  display: none !important;
+}
+
+.application-form-block .application-form-wizard .wizard-menu-active-item {
+  background: var(--application-form-teal);
+}
+
+.application-form-block .application-form-step-label {
+  font-size: 0.875rem;
+  color: var(--application-form-label);
+  margin: 0 1rem;
+  flex: 0 0 auto;
+}
+
+/* Buttons: Back grey, Next/Submit teal, oval */
+.application-form-block .application-form-wizard .wizard-button-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--application-form-grey);
+}
+
+.application-form-block .application-form-wizard .wizard-button-prev,
+.application-form-block .application-form-wizard [id*="wizard-button-prev"] {
+  order: 1;
+  padding: 0.75rem 1.5rem;
+  background: var(--application-form-grey);
+  color: var(--application-form-label);
+  border: 1px solid var(--application-form-grey-border);
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.application-form-block .application-form-wizard .wizard-button-next,
+.application-form-block .application-form-wizard [id*="wizard-button-next"] {
+  order: 3;
+  padding: 0.75rem 1.5rem;
+  background: var(--application-form-teal);
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.application-form-block .application-form-wizard .wizard-button-next:hover,
+.application-form-block .application-form-wizard [id*="wizard-button-next"]:hover {
+  background: var(--application-form-teal-hover);
+}
+
+.application-form-block .application-form-step-label {
+  order: 2;
+}
+
+/* Inputs: rounded, light grey border */
+.application-form-block .application-form-wizard input[type="text"],
+.application-form-block .application-form-wizard input[type="email"],
+.application-form-block .application-form-wizard select {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--application-form-grey-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.application-form-block .application-form-wizard .field-label {
+  font-weight: 600;
+  color: var(--application-form-label);
+  font-size: 0.9375rem;
+  margin-bottom: 0.25rem;
+}
+
+.application-form-block .application-form-wizard .panel-wrapper {
+  gap: 1.25rem;
+}
+
+/* Submit button in last step: teal oval */
+.application-form-block .application-form-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--application-form-teal);
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.application-form-block .application-form-submit-btn:hover {
+  background: var(--application-form-teal-hover);
 }
 
 .application-form-header {
