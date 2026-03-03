@@ -1157,26 +1157,34 @@ table {
   --link-hover-color: #9A3412;  /* darker hover */
 }
 
-/* Cookie consent modal (injected by Launch) – centered overlay + white card */
+/* Cookie consent modal (injected by Launch) – slightly above bottom (30px), horizontally centered */
 #consentModal {
   position: fixed;
   inset: 0;
   z-index: 99999;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 1.5rem;
+  padding-bottom: 30px;
   box-sizing: border-box;
+}
+
+/* Ensure modal card stays centered when Launch adds wrapper divs */
+#consentModal > * {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #consentModal .consentmodal-content {
   max-width: 560px;
+  width: 100%;
   border-radius: 10px;
   background-color: #fff;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
-  right: 0;
+  margin: 0 auto;
 }
 
 #consentModal .close {
