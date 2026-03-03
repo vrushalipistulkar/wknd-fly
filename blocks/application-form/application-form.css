@@ -139,12 +139,18 @@ main > .section:has(.application-form-block) > div {
   order: 3;
 }
 
-/* Submit in same row as Back / step label (moved into .wizard-button-wrapper by JS) */
+/* Submit in same row as Back / step label (moved into .wizard-button-wrapper by JS).
+   Hidden on steps 1–2; only visible on last step in place of Next. */
 .application-form-block .application-form-wizard .wizard-button-wrapper > .submit-wrapper {
   order: 3;
   width: auto !important;
   flex: 0 0 auto;
   margin-top: 0;
+  display: none;
+}
+
+.application-form-block .application-form-wizard .current-wizard-step.panel-wrapper:last-of-type ~ .wizard-button-wrapper > .submit-wrapper {
+  display: flex;
 }
 
 .application-form-block .application-form-wizard .wizard-button-next button,
