@@ -59,6 +59,10 @@
             {
               "name": "WeHealthcare Theme",
               "value": "wehealthcare-theme"
+            },
+            {
+              "name": "Fly Theme",
+              "value": "fly-theme"
             }
           ]
       },
