@@ -1178,6 +1178,10 @@ table {
 }
 
 #consentModal .consentmodal-content {
+  position: fixed;
+  bottom: 50px !important;
+  left: 50%;
+  transform: translateX(-50%);
   max-width: 560px;
   width: 100%;
   border-radius: 10px;
