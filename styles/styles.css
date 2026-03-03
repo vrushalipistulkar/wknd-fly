@@ -1294,3 +1294,6 @@ table {
 #consentModal #disable.btn_3.action_btn:hover {
   filter: brightness(1.1);
 }
+div#profile-viewer-container{
+    display: none !important;
+}
