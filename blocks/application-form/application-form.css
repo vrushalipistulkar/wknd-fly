@@ -139,6 +139,14 @@ main > .section:has(.application-form-block) > div {
   order: 3;
 }
 
+/* Submit in same row as Back / step label (moved into .wizard-button-wrapper by JS) */
+.application-form-block .application-form-wizard .wizard-button-wrapper > .submit-wrapper {
+  order: 3;
+  width: auto !important;
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
 .application-form-block .application-form-wizard .wizard-button-next button,
 .application-form-block .application-form-wizard [id*="wizard-button-next"] button {
   padding: 0.75rem 1.5rem !important;
@@ -183,14 +191,11 @@ main > .section:has(.application-form-block) > div {
   gap: 1.25rem;
 }
 
-/* Submit button: same teal oval as Next, right-aligned to match reference */
+/* Submit button: same teal oval as Next (when in button row, width auto from rule above) */
 .application-form-block .application-form-wizard .submit-wrapper {
-  width: 100% !important;
   max-width: none;
   display: flex;
   justify-content: flex-end;
-  margin-top: 1rem;
-  margin-left: 0;
 }
 
 .application-form-block .application-form-wizard .submit-wrapper button,

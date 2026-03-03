@@ -237,4 +237,8 @@ function setupApplicationFormStepIndicator(block) {
   const nextBtn = btnWrapper.querySelector('.wizard-button-next, [id*="wizard-button-next"]');
   if (nextBtn) btnWrapper.insertBefore(stepLabel, nextBtn);
   else btnWrapper.appendChild(stepLabel);
+
+  /* Move Submit into the wizard button row so it sits inline with Back and "n/3 step" */
+  const submitWrapper = wizard.querySelector('.submit-wrapper');
+  if (submitWrapper) btnWrapper.appendChild(submitWrapper);
 }
