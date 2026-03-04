@@ -1,0 +1,151 @@
+/**
+ * Loan Calculator block – Purchase price, Down payment, Term sliders;
+ * monthly payment output and Apply now CTA. Interest rate from UE (block config).
+ */
+
+import { readBlockConfig, loadCSS } from '../../scripts/aem.js';
+
+const DEFAULT_INTEREST_RATE = 6.5;
+const MIN_PRICE = 100000;
+const MAX_PRICE = 3000000;
+const MIN_TERM = 5;
+const MAX_TERM = 30;
+
+function parseNumber(val, fallback = 0) {
+  const n = parseFloat(String(val).replace(/[^0-9.-]/g, ''), 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function formatCurrency(n) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+}
+
+function monthlyPayment(principal, annualRatePercent, termYears) {
+  if (principal <= 0) return 0;
+  const r = (annualRatePercent / 100) / 12;
+  const n = termYears * 12;
+  if (r <= 0) return principal / n;
+  const factor = r * (1 + r) ** n;
+  const denom = (1 + r) ** n - 1;
+  return (principal * factor) / denom;
+}
+
+function buildSlider(id, label, value, min, max, step, formatter) {
+  const wrap = document.createElement('div');
+  wrap.className = 'loan-calculator-field';
+  const labelEl = document.createElement('label');
+  labelEl.className = 'loan-calculator-label';
+  labelEl.textContent = label;
+  const valueEl = document.createElement('div');
+  valueEl.className = 'loan-calculator-value';
+  valueEl.textContent = formatter ? formatter(value) : value;
+  const input = document.createElement('input');
+  input.type = 'range';
+  input.min = min;
+  input.max = max;
+  input.step = step || 1;
+  input.value = value;
+  input.id = id;
+  input.setAttribute('aria-label', label);
+  wrap.append(labelEl, valueEl, input);
+  return { wrap, valueEl, input };
+}
+
+export default async function decorate(block) {
+  const config = readBlockConfig(block) || {};
+  const interestRate = parseNumber(config['interest-rate'] ?? config.interestrate ?? config.interestRate, DEFAULT_INTEREST_RATE);
+  const applyNowLink = (config['apply-now-link'] ?? config.applynowlink ?? config.applyNowLink ?? '').toString().trim();
+  const applyNowText = (config['apply-now-text'] ?? config.applynowtext ?? config.applyNowText ?? 'Apply now').toString().trim();
+  const description = (config.description ?? 'Estimate how much you could be paying monthly for your loan').toString().trim();
+
+  const codeBasePath = window.hlx?.codeBasePath || '';
+  await loadCSS(`${codeBasePath}/blocks/loan-calculator/loan-calculator.css`);
+
+  [...block.children].forEach((row) => { row.style.display = 'none'; });
+  block.classList.add('loan-calculator-block');
+
+  let purchasePrice = 1028000;
+  let downPayment = 100000;
+  let termYears = 20;
+
+  const heading = document.createElement('h2');
+  heading.className = 'loan-calculator-heading';
+  heading.textContent = 'Calculate your monthly payment';
+
+  const grid = document.createElement('div');
+  grid.className = 'loan-calculator-grid';
+
+  const left = document.createElement('div');
+  left.className = 'loan-calculator-inputs';
+
+  const purchase = buildSlider('loan-purchase', 'Purchase price', purchasePrice, MIN_PRICE, MAX_PRICE, 1000, formatCurrency);
+  purchase.input.addEventListener('input', () => {
+    purchasePrice = Number(purchase.input.value);
+    purchase.valueEl.textContent = formatCurrency(purchasePrice);
+    const cap = maxDown();
+    down.input.max = cap;
+    if (downPayment > cap) {
+      downPayment = Math.round(cap / 1000) * 1000;
+      down.input.value = downPayment;
+      const pct = Math.round((downPayment / purchasePrice) * 100);
+      down.valueEl.textContent = `${formatCurrency(downPayment)} (${pct}%)`;
+    }
+    updatePayment();
+  });
+  left.append(purchase.wrap);
+
+  const maxDown = () => Math.min(purchasePrice * 0.9, MAX_PRICE);
+  downPayment = Math.min(downPayment, maxDown());
+  const down = buildSlider('loan-down', 'Down payment', downPayment, 0, maxDown(), 1000, (v) => {
+    const pct = purchasePrice > 0 ? Math.round((v / purchasePrice) * 100) : 0;
+    return `${formatCurrency(v)} (${pct}%)`;
+  });
+  down.input.addEventListener('input', () => {
+    downPayment = Number(down.input.value);
+    const pct = Math.round((downPayment / purchasePrice) * 100);
+    down.valueEl.textContent = `${formatCurrency(downPayment)} (${pct}%)`;
+    updatePayment();
+  });
+  left.append(down.wrap);
+
+  const term = buildSlider('loan-term', 'Term', termYears, MIN_TERM, MAX_TERM, 1, (v) => `${v} years`);
+  term.input.addEventListener('input', () => {
+    termYears = Number(term.input.value);
+    term.valueEl.textContent = `${termYears} years`;
+    updatePayment();
+  });
+  left.append(term.wrap);
+
+  grid.append(left);
+
+  const right = document.createElement('div');
+  right.className = 'loan-calculator-result';
+  const amountEl = document.createElement('div');
+  amountEl.className = 'loan-calculator-monthly-amount';
+  const amountLabel = document.createElement('div');
+  amountLabel.className = 'loan-calculator-monthly-label';
+  amountLabel.textContent = 'Monthly payment';
+  const ctaWrap = document.createElement('div');
+  ctaWrap.className = 'loan-calculator-cta';
+  const cta = document.createElement('a');
+  cta.href = applyNowLink || '#';
+  cta.className = 'loan-calculator-apply-button';
+  cta.textContent = applyNowText;
+  if (!applyNowLink) cta.addEventListener('click', (e) => e.preventDefault());
+  ctaWrap.append(cta);
+  const descEl = document.createElement('p');
+  descEl.className = 'loan-calculator-description';
+  descEl.textContent = description;
+  right.append(amountEl, amountLabel, ctaWrap, descEl);
+  grid.append(right);
+
+  function updatePayment() {
+    const principal = Math.max(0, purchasePrice - downPayment);
+    const payment = monthlyPayment(principal, interestRate, termYears);
+    amountEl.textContent = formatCurrency(Math.round(payment));
+  }
+
+  updatePayment();
+
+  block.append(heading, grid);
+}

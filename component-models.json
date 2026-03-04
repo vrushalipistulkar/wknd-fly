@@ -669,6 +669,41 @@
     "fields": []
   },
   {
+    "id": "loan-calculator",
+    "fields": [
+      {
+        "component": "text",
+        "name": "interest-rate",
+        "label": "Interest Rate (%)",
+        "value": "6.5",
+        "valueType": "string",
+        "description": "Annual interest rate used for monthly payment calculation (e.g. 6.5)"
+      },
+      {
+        "component": "text",
+        "name": "apply-now-link",
+        "label": "Apply Now Link",
+        "value": "",
+        "valueType": "string",
+        "description": "URL for the Apply now button"
+      },
+      {
+        "component": "text",
+        "name": "apply-now-text",
+        "label": "Apply Now Text",
+        "value": "Apply now",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "description",
+        "label": "Description",
+        "value": "Estimate how much you could be paying monthly for your loan",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "confirmation",
     "fields": []
   },
