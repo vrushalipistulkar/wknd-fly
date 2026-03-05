@@ -12,6 +12,11 @@
   display: none !important;
 }
 
+/* UE-replaced content: flat divs with data-aue-prop; hide so only calculator shows */
+.loan-calculator-block .loan-calculator-config-row {
+  display: none !important;
+}
+
 .loan-calculator-heading {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
