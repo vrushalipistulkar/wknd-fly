@@ -17,6 +17,11 @@
   display: none !important;
 }
 
+/* Hide any direct config divs (UE flat structure) so only .loan-calculator-root is visible */
+.loan-calculator-block > div:not(.loan-calculator-root) {
+  display: none !important;
+}
+
 .loan-calculator-heading {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
