@@ -6,7 +6,6 @@
  */
 
 import { readBlockConfig } from "../../scripts/aem.js";
-import { dispatchCustomEvent } from "../../scripts/custom-events.js";
 
 function applyButtonConfigToSubmitButton(block, config) {
   const submitButton = block.querySelector("form button[type='submit']");
@@ -133,26 +132,43 @@ export default async function decorate(block) {
   // After form is rendered, apply button config and attach submit handler
   setTimeout(() => {
     applyButtonConfigToSubmitButton(block, config);
-    const form = block.querySelector('form');
-    if (form) {
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        const email = form.querySelector('input[name="email"]')?.value?.trim() || '';
-        const firstName = form.querySelector('input[name="firstName"]')?.value?.trim() || '';
-        const lastName = form.querySelector('input[name="lastName"]')?.value?.trim() || '';
-        const consent = form.querySelector('input[name="consent"]')?.checked ?? true ? "true" : "false";
-        if (typeof window.updateDataLayer === 'function') {
-          window.updateDataLayer({
-            personalEmail: { address: email },
-            person: { name: { firstName, lastName } },
-            loyaltyConsent: consent,
-          });
-        }
-        showSuccessPopup();
-        document.dispatchEvent(new CustomEvent("join-us", { bubbles: true }));
-      });
-    }
+    attachFormSubmitHandler(block);
   }, 100);
+}
+
+/**
+ * Attaches form submission handler.
+ * Uses capture phase so we run first; stopImmediatePropagation prevents the Adaptive Form
+ * runtime from doing a POST to the page URL (which returns 405 / "Error invoking a rest API").
+ * @param {HTMLElement} block - The join-us block
+ */
+function attachFormSubmitHandler(block) {
+  const form = block.querySelector('form');
+  if (!form) {
+    console.warn('Form not found in join-us block');
+    return;
+  }
+
+  form.addEventListener(
+    'submit',
+    (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      const email = form.querySelector('input[name="email"]')?.value?.trim() || '';
+      const firstName = form.querySelector('input[name="firstName"]')?.value?.trim() || '';
+      const lastName = form.querySelector('input[name="lastName"]')?.value?.trim() || '';
+      const consent = form.querySelector('input[name="consent"]')?.checked ?? true ? 'true' : 'false';
+      if (typeof window.updateDataLayer === 'function') {
+        window.updateDataLayer({
+          personalEmail: { address: email },
+          person: { name: { firstName, lastName } },
+          loyaltyConsent: consent,
+        });
+      }
+      showSuccessPopup();
+      document.dispatchEvent(new CustomEvent('join-us', { bubbles: true }));
+    },
+    true
+  );
 }
