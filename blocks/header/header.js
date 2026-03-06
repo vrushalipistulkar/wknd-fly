@@ -730,6 +730,7 @@ export default async function decorate(block) {
   const navTools = nav.querySelector('.nav-tools');
   if (navTools) {
     const contentWrapper = nav.querySelector('.nav-tools > div[class = "default-content-wrapper"]');
+    const targetContainer = contentWrapper || navTools;
 
     // Add Sign In Button or User Profile
     const isLoggedIn = localStorage.getItem("wkndfly_user_logged_in") === "true";
@@ -820,7 +821,6 @@ export default async function decorate(block) {
         }
       });
       langWrap.append(langBtn, langMenu);
-      const targetContainer = contentWrapper || navTools;
       targetContainer.append(langWrap);
     } catch (e) {
       // eslint-disable-next-line no-console
