@@ -147,9 +147,7 @@ export default async function decorate(block) {
           });
         }
         showSuccessPopup();
-        const submitButton = form.querySelector("button[type='submit']");
-        const authoredEventType = submitButton?.dataset?.buttonEventType?.trim();
-        dispatchCustomEvent(authoredEventType);
+        document.dispatchEvent(new CustomEvent("join-us", { bubbles: true }));
       });
     }
   }, 100);
