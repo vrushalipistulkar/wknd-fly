@@ -447,6 +447,7 @@ function createUserProfile(container, langCode) {
   // Create user profile container
   const userProfile = document.createElement("div");
   userProfile.className = "user-profile";
+  userProfile.style.position = "relative";
 
   // Create user button (icon + name)
   const userButton = document.createElement("button");
@@ -481,7 +482,7 @@ function createUserProfile(container, langCode) {
   const userMenu = document.createElement("div");
   userMenu.className = "user-menu";
   userMenu.setAttribute("role", "menu");
-  userMenu.style.display = "none";
+  userMenu.style.cssText = "display: none; position: absolute; top: 100%; right: 0; z-index: 1000;";
 
   // Sign out button
   const signOutButton = document.createElement("button");

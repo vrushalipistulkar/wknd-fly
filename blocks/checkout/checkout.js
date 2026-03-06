@@ -339,6 +339,32 @@ function renderTripTotal(sidebar, total) {
           if (typeof window._satellite !== "undefined" && typeof window._satellite.setVar === "function") {
             window._satellite.setVar("Profile - Email", formData.email);
           }
+
+          localStorage.setItem(
+            "com.adobe.reactor.dataElements.Identities",
+            JSON.stringify({
+              Email: [
+                {
+                  id: formData.email,
+                  primary: true,
+                  authenticatedState: "authenticated",
+                },
+              ],
+            })
+          );
+
+          sessionStorage.setItem(
+            "com.adobe.reactor.dataElements.Identity Map",
+            JSON.stringify({
+              Email: [
+                {
+                  id: formData.email,
+                  primary: true,
+                  authenticatedState: "authenticated",
+                },
+              ],
+            })
+          );
         }
       } catch (e) {
         // eslint-disable-next-line no-console

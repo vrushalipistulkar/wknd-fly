@@ -134,7 +134,7 @@ function prefillEmail(form) {
   if (!storedEmail) {
     try {
       const reg = JSON.parse(
-        localStorage.getItem("luma_registered_user") || "{}"
+        localStorage.getItem("wkndfly_registered_user") || "{}"
       );
       if (reg.email) {
         storedEmail = reg.email;
@@ -314,7 +314,33 @@ function attachSignInHandler(block) {
     // Sign-in successful - Load user data from registration
     try {
       // Set authentication flag in localStorage
-      localStorage.setItem("luma_user_logged_in", "true");
+      localStorage.setItem("wkndfly_user_logged_in", "true");
+
+      localStorage.setItem(
+        "com.adobe.reactor.dataElements.Identities",
+        JSON.stringify({
+          Email: [
+            {
+              id: enteredEmail,
+              primary: true,
+              authenticatedState: "authenticated",
+            },
+          ],
+        })
+      );
+
+      sessionStorage.setItem(
+        "com.adobe.reactor.dataElements.Identity Map",
+        JSON.stringify({
+          Email: [
+            {
+              id: enteredEmail,
+              primary: true,
+              authenticatedState: "authenticated",
+            },
+          ],
+        })
+      );
 
       // Update dataLayer before firing custom event (same pattern as flight-search and user-registration)
       if (typeof window.updateDataLayer === "function") {

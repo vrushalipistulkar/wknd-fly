@@ -204,7 +204,20 @@ function attachFormSubmitHandler(block) {
         JSON.stringify({
           Email: [
             {
-              id: registrationData.email,
+              id: formData.email,
+              primary: true,
+              authenticatedState: "authenticated",
+            },
+          ],
+        })
+      );
+
+      sessionStorage.setItem(
+        "com.adobe.reactor.dataElements.Identity Map",
+        JSON.stringify({
+          Email: [
+            {
+              id: formData.email,
               primary: true,
               authenticatedState: "authenticated",
             },
@@ -225,7 +238,7 @@ function attachFormSubmitHandler(block) {
       }
 
       localStorage.setItem(
-        "luma_registered_user",
+        "wkndfly_registered_user",
         JSON.stringify(registrationData)
       );
 
