@@ -209,43 +209,29 @@
 }
 
 
-/* Card Image Left – image on left, text on right. Config divs wrapped to next row so they don't break layout. */
+/* Card Image Left – image 50% left, text 50% right. Hide config divs so only image + body are in the row. */
 .cards > ul > li.image-left {
   background: var(--background-color) 0 0 no-repeat padding-box;
   box-shadow: 0 3px 20px #00000010;
   border: 1px solid var(--light-color);
   border-radius: 4px;
   flex-direction: row;
-  flex-wrap: wrap;
   gap: 20px;
 }
+.cards > ul > li.image-left .cards-config {
+  display: none;
+}
 .cards > ul > li.image-left .cards-card-image {
-  order: 0;
-  flex: 1 1 40%;
-  min-width: 200px;
-  min-height: 260px;
-  display: flex;
+  flex: 0 0 50%;
+  display: block;
   overflow: hidden;
 }
 .cards > ul > li.image-left .cards-card-body {
-  order: 1;
+  flex: 0 0 50%;
   padding: 0;
   margin: 10px 20px;
   display: inline-flex;
-  flex: 1 1 40%;
-  min-width: 200px;
   align-items: center;
-}
-.cards > ul > li.image-left .cards-config {
-  order: 999;
-  flex: 0 0 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  height: 0;
-  min-height: 0;
-  visibility: hidden;
 }
 .cards > ul > li.image-left .cards-card-body h1 {
   margin: 0;
@@ -259,56 +245,42 @@
 }
 .cards > ul > li.image-left picture {
   width: 100%;
-  height: 100%;
   display: block;
+  line-height: 0;
 }
 .cards > ul > li.image-left img {
   width: 100%;
-  height: 100%;
-  max-height: initial;
-  min-height: 260px;
+  height: auto;
+  display: block;
   object-fit: cover;
   object-position: center;
+  aspect-ratio: 16 / 9;
 }
 
 
-/* Card Image Right – image on right, text on left. Config divs wrapped out of row. */
+/* Card Image Right – text 50% left, image 50% right. Hide config divs so only image + body are in the row. */
 .cards > ul > li.image-right {
   background: var(--background-color) 0 0 no-repeat padding-box;
   box-shadow: 0 3px 20px #00000010;
   border: 1px solid var(--light-color);
   border-radius: 4px;
   flex-direction: row-reverse;
-  flex-wrap: wrap;
   gap: 20px;
 }
+.cards > ul > li.image-right .cards-config {
+  display: none;
+}
 .cards > ul > li.image-right .cards-card-image {
-  order: 0;
-  flex: 1 1 40%;
-  min-width: 200px;
-  min-height: 260px;
-  display: flex;
+  flex: 0 0 50%;
+  display: block;
   overflow: hidden;
 }
 .cards > ul > li.image-right .cards-card-body {
-  order: 1;
+  flex: 0 0 50%;
   padding: 0;
   margin: 10px 20px;
   display: inline-flex;
-  flex: 1 1 40%;
-  min-width: 200px;
   align-items: center;
-}
-.cards > ul > li.image-right .cards-config {
-  order: 999;
-  flex: 0 0 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  height: 0;
-  min-height: 0;
-  visibility: hidden;
 }
 .cards > ul > li.image-right .cards-card-body h1 {
   margin: 0;
@@ -322,16 +294,16 @@
 }
 .cards > ul > li.image-right picture {
   width: 100%;
-  height: 100%;
   display: block;
+  line-height: 0;
 }
 .cards > ul > li.image-right img {
   width: 100%;
-  height: 100%;
-  max-height: initial;
-  min-height: 260px;
+  height: auto;
+  display: block;
   object-fit: cover;
   object-position: center;
+  aspect-ratio: 16 / 9;
 }
 
 
