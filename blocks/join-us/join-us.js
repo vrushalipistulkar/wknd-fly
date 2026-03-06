@@ -167,7 +167,7 @@ function attachFormSubmitHandler(block) {
         });
       }
       showSuccessPopup();
-      document.dispatchEvent(new CustomEvent('join-us', { bubbles: true }));
+      document.dispatchEvent(new CustomEvent('join.wkndclub', { bubbles: true }));
     },
     true
   );
