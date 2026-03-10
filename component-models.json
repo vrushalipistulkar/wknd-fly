@@ -637,7 +637,7 @@
       },
       {
         "component": "text",
-        "name": "customStyles",
+        "name": "customstyles",
         "label": "Custom Styles",
         "value": "",
         "valueType": "string",
@@ -1149,7 +1149,7 @@
       },
       {
         "component": "text",
-        "name": "customStyles",
+        "name": "customstyles",
         "label": "Custom Styles",
         "value": "",
         "valueType": "string",
@@ -7325,7 +7325,7 @@
       },
       {
         "component": "text",
-        "name": "customStyles",
+        "name": "customstyles",
         "label": "Custom Styles",
         "value": "",
         "valueType": "string",

@@ -407,7 +407,7 @@ function setupClickOutside() {
 // Main decorate function
 export default async function decorate(block) {
   const config = readBlockConfig(block) || {};
-  const customStyles = config.customStyles ?? config['custom-styles'];
+  const customStyles = config.customstyles;
   if (customStyles && String(customStyles).trim()) {
     block.classList.add(String(customStyles).trim());
   }
