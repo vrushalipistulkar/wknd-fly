@@ -35,12 +35,11 @@ export default function decorate(block) {
     const link = getCell(5);
     const selectable = getCell(6);
     const alignment = (getCell(7) || 'left').toLowerCase();
-    const verticalAlignment = (getCell(8) || 'middle').toLowerCase();
-    const buttonEventType = getCell(9);
-    const buttonWebhookUrl = getCell(10);
-    const buttonFormId = getCell(11);
-    const buttonData = getCell(12);
-    const customStyles = getCell(13);
+    const buttonEventType = getCell(8);
+    const buttonWebhookUrl = getCell(9);
+    const buttonFormId = getCell(10);
+    const buttonData = getCell(11);
+    const customStyles = getCell(12);
 
     if (customStyles && String(customStyles).trim()) {
       li.classList.add(String(customStyles).trim());

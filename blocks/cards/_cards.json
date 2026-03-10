@@ -136,25 +136,6 @@
           ]
         },
         {
-          "component": "select",
-          "name": "verticalalignment",
-          "label": "Vertical Alignment",
-          "options": [
-            {
-              "name": "Top",
-              "value": "top"
-            },
-            {
-              "name": "Middle",
-              "value": "middle"
-            },
-            {
-              "name": "Bottom",
-              "value": "bottom"
-            }
-          ]
-        },
-        {
           "component": "text",
           "name": "buttoneventtype",
           "label": "Button Event Type",
