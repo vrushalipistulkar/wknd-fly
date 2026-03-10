@@ -45,7 +45,7 @@ export default function decorate(block) {
       li.classList.add(String(customStyles).trim());
     }
 
-    li.classList.add(`cards-card--alignment-${alignment}`, `cards-card--verticalalignment-${verticalAlignment}`);
+    li.classList.add(`cards-card--alignment-${alignment}`);
     if (selectable.toLowerCase() === 'true') li.classList.add('cards-card--selectable');
     if (link) li.dataset.sectionLink = link;
 
