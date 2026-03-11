@@ -407,10 +407,6 @@ function setupClickOutside() {
 // Main decorate function
 export default async function decorate(block) {
   const config = readBlockConfig(block) || {};
-  const customStyles = config.customstyles;
-  if (customStyles && String(customStyles).trim()) {
-    block.classList.add(String(customStyles).trim());
-  }
   /* Hide button config rows (index >= 7) on published/live, same as hero/cards */
   [...block.children].forEach((row, index) => {
     if (index >= 7) row.style.display = 'none';
@@ -419,6 +415,11 @@ export default async function decorate(block) {
   // Clear block
   block.innerHTML = '';
   block.className = 'flight-search';
+
+  const customStyles = config.customstyles;
+  if (customStyles && String(customStyles).trim()) {
+    block.classList.add(String(customStyles).trim());
+  }
   
   // Check for URL parameters to pre-fill form (override defaults when present)
   const urlParams = new URLSearchParams(window.location.search);
