@@ -1,4 +1,5 @@
 import { dispatchCustomEvent } from '../../scripts/custom-events.js';
+import { readBlockConfig } from '../../scripts/aem.js';
 /**
  * Checkout block – consolidates selected flights from the flights block and shows Trip Summary.
  * Selected flights are stored in sessionStorage (wknd-fly-selected-flights) when user clicks Select on any flight.
@@ -442,7 +443,9 @@ function fillFormDataFromDataLayer(block) {
 }
 
 export default async function decorate(block) {
-  const config = block.dataset;
+  const config = readBlockConfig(block);
+  /* Hide all config rows on live */
+  [...block.children].forEach((row) => row.style.display = 'none');
   block.classList.add('checkout-block');
   const wrapper = document.createElement('div');
   wrapper.className = 'checkout-wrapper';
