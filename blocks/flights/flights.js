@@ -6,128 +6,48 @@ const PUBLISH_GRAPHQL_BASE = 'https://275323-918sangriatortoise.adobeioruntime.n
 
 // Sample airport data (shared with flight-search)
 const AIRPORTS = [
-  { code: 'WAW', name: 'Warsaw Chopin Airport', city: 'Warsaw' },
-  { code: 'LHR', name: 'London Heathrow', city: 'London' },
-  { code: 'CDG', name: 'Charles de Gaulle', city: 'Paris' },
-  { code: 'ORD', name: 'O\'Hare International', city: 'Chicago' },
-  { code: 'LAS', name: 'McCarran International', city: 'Las Vegas' },
-  { code: 'JFK', name: 'John F. Kennedy International', city: 'New York' },
-  { code: 'MBJ', name: 'Sangster International', city: 'Montego Bay' },
-  { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam' },
-  { code: 'TXL', name: 'Berlin Tegel', city: 'Berlin' },
-  { code: 'HND', name: 'Haneda Airport', city: 'Tokyo' },
-  { code: 'SFR', name: 'San Francisco International', city: 'San Francisco' },
-  { code: 'CUN', name: 'Cancún International', city: 'Cancún' },
-  { code: 'DEL', name: 'Indira Gandhi International', city: 'Delhi' },
-  { code: 'TQO', name: 'Tulum International', city: 'Tulum' },
+  { code: 'WAW', city: 'Warsaw', country: 'Poland' },
+  { code: 'LHR', city: 'London', country: 'United Kingdom' },
+  { code: 'CDG', city: 'Paris', country: 'France' },
+  { code: 'ORD', city: 'Chicago', country: 'United States' },
+  { code: 'LAS', city: 'Las Vegas', country: 'United States' },
+  { code: 'JFK', city: 'New York', country: 'United States' },
+  { code: 'MBJ', city: 'Montego Bay', country: 'Jamaica' },
+  { code: 'AMS', city: 'Amsterdam', country: 'Netherlands' },
+  { code: 'TXL', city: 'Berlin', country: 'Germany' },
+  { code: 'HND', city: 'Tokyo', country: 'Japan' },
+  { code: 'SFR', city: 'San Francisco', country: 'United States' },
+  { code: 'CUN', city: 'Cancún', country: 'Mexico' },
+  { code: 'DEL', city: 'Delhi', country: 'India' },
+  { code: 'TQO', city: 'Tulum', country: 'Mexico' },
 ];
-
-// Sample flight data - in production, this would come from an API
-const SAMPLE_FLIGHTS = {
-  'AMS-TQO': [
-    {
-      id: '1',
-      from: 'AMS',
-      to: 'TQO',
-      fromName: 'Amsterdam',
-      toName: 'Tulum',
-      departureTime: '5:15 PM',
-      arrivalTime: '3:30 AM',
-      price: 550.00,
-      class: 'Standard',
-      image: 'https://t4.ftcdn.net/jpg/03/30/53/47/240_F_330534715_1vke3762QI4yYRsnSXNaE8NGDUF8xzno.jpg',
-    },
-    {
-      id: '2',
-      from: 'AMS',
-      to: 'TQO',
-      fromName: 'Amsterdam',
-      toName: 'Tulum',
-      departureTime: '8:30 AM',
-      arrivalTime: '6:45 PM',
-      price: 625.00,
-      class: 'Business',
-      image: 'https://t3.ftcdn.net/jpg/17/40/03/60/240_F_1740036054_pyNaH8LuAe27d9KpFTZSjNAY844g6WJV.jpg',
-    },
-  ],
-  'WAW-TQO': [
-    {
-      id: '3',
-      from: 'WAW',
-      to: 'TQO',
-      fromName: 'Warsaw',
-      toName: 'Tulum',
-      departureTime: '10:00 AM',
-      arrivalTime: '8:15 PM',
-      price: 680.00,
-      class: 'Standard',
-      image: 'https://t4.ftcdn.net/jpg/16/22/86/51/240_F_1622865138_g9NtaEIxizg8ZY1bpNCqJiqbQl9mqFvB.jpg',
-    },
-  ],
-  'LHR-TQO': [
-    {
-      id: '4',
-      from: 'LHR',
-      to: 'TQO',
-      fromName: 'London',
-      toName: 'Tulum',
-      departureTime: '2:00 PM',
-      arrivalTime: '11:30 PM',
-      price: 720.00,
-      class: 'Standard',
-      image: 'https://t4.ftcdn.net/jpg/09/33/35/09/240_F_933350998_f9ATUKob9OVKFGS0zNetT28Ub4NTSwEN.jpg',
-    },
-  ],
-  'JFK-TQO': [
-    {
-      id: '5',
-      from: 'JFK',
-      to: 'TQO',
-      fromName: 'New York',
-      toName: 'Tulum',
-      departureTime: '9:00 AM',
-      arrivalTime: '1:30 PM',
-      price: 450.00,
-      class: 'Standard',
-      image: 'https://t3.ftcdn.net/jpg/05/61/35/04/240_F_561350476_Oz0OHoStNdPdsiDVY6K2DQG2SqyYlSgI.jpg',
-    },
-  ],
-};
 
 // Trip / checkout: persist selected flights across pages (sessionStorage)
 const TRIP_STORAGE_KEY = 'wknd-fly-selected-flights';
 
-// Map destination URL slug (e.g. /en/destinations/mexico) to airport code for GraphQL
-const DESTINATION_SLUG_TO_CODE = {
-  mexico: 'TQO',
-  tulum: 'TQO',
-  cancun: 'CUN',
-  montego: 'MBJ',
-  montegobay: 'MBJ',
-  london: 'LHR',
-  paris: 'CDG',
-  amsterdam: 'AMS',
-  warsaw: 'WAW',
-  newyork: 'JFK',
-  tokyo: 'HND',
-  delhi: 'DEL',
-  berlin: 'TXL',
-  chicago: 'ORD',
-  lasvegas: 'LAS',
-  sanfrancisco: 'SFR',
-};
+// Normalize string for matching URL slug to country (e.g. "United States" -> "unitedstates")
+function slugify(str) {
+  return (str || '').toLowerCase().replace(/[- ]/g, '');
+}
 
-function getDestinationCodeFromPath() {
+// If path contains /en/destinations/<slug>, return matching country name from AIRPORTS, else null
+function getCountryFromPath() {
   const pathname = (typeof window !== 'undefined' && window.location.pathname) || '';
-  const match = pathname.match(/\/destinations\/([^/]+)/i);
-  if (!match) return '';
-  const slug = (match[1] || '').toLowerCase().replace(/[- ]/g, '');
-  const code = DESTINATION_SLUG_TO_CODE[slug];
-  if (code) return code;
-  const byCity = AIRPORTS.find(
-    (a) => a.city.toLowerCase().replace(/[- ]/g, '') === slug || a.code.toLowerCase() === slug
-  );
-  return byCity ? byCity.code : '';
+  if (!pathname.includes('/en/destinations/')) return null;
+  const match = pathname.match(/\/en\/destinations\/([^/]+)/i);
+  if (!match) return null;
+  const slug = slugify(match[1] || '');
+  if (!slug) return null;
+  const countries = [...new Set(AIRPORTS.map((a) => a.country))];
+  const country = countries.find((c) => slugify(c) === slug);
+  return country ?? null;
+}
+
+// If path contains /en/destinations/<country-slug>, return all airport codes for that country
+function getDestinationCodesFromPath() {
+  const country = getCountryFromPath();
+  if (!country) return [];
+  return AIRPORTS.filter((a) => a.country === country).map((a) => a.code);
 }
 
 function resolveFromAndTo() {
@@ -139,7 +59,11 @@ function resolveFromAndTo() {
     const dlFrom = window.getDataLayerProperty('from');
     from = (dlFrom && String(dlFrom).trim().toUpperCase()) || '';
   }
-  if (!to) to = getDestinationCodeFromPath();
+  if (!to) {
+    const destinationCodes = getDestinationCodesFromPath();
+    const country = getCountryFromPath();
+    if (destinationCodes.length > 0) return { from, destinationCodes, country: country ?? undefined };
+  }
   return { from, to };
 }
 
@@ -204,13 +128,13 @@ function mapGraphQLItemToFlight(item, isAuthor) {
     departureTime,
     arrivalTime,
     price,
-    class: item?.flightClass ?? item?.class ?? 'Standard',
+    class: item?.flightClass ?? item?.class ?? 'economy',
     image: imageUrl,
     flightLength,
   };
 }
 
-async function fetchFlightsFromGraphQL(from, to, config) {
+async function fetchFlightsFromGraphQL(from, to) {
   const fromCode = (from || '').toUpperCase();
   const toCode = (to || '').toUpperCase();
   const isAuthor = isAuthorEnvironment();
@@ -339,7 +263,7 @@ function formatDate(date) {
 }
 
 // Display flight results
-function displayFlightResults(flights, from, to, date, config = {}) {
+function displayFlightResults(flights, from, to, date) {
   const block = document.querySelector('.flights');
   if (!block) {
     console.error('Flights block not found!');
@@ -368,44 +292,26 @@ function displayFlightResults(flights, from, to, date, config = {}) {
     return;
   }
   
-  // Title - use authorable title if provided, otherwise generate default
+  const fromAirport = AIRPORTS.find((a) => a.code === from);
+  const toAirport = AIRPORTS.find((a) => a.code === to);
   const title = createElement('h2', 'flight-results-title');
-  if (config.title) {
-    title.textContent = config.title;
-  } else {
-    const fromAirport = AIRPORTS.find((a) => a.code === from);
-    const toAirport = AIRPORTS.find((a) => a.code === to);
-    title.textContent = `One-Way connections from ${fromAirport?.city || from} to ${toAirport?.city || to}`;
-  }
+  title.textContent = `One-Way connections from ${fromAirport?.city || from} to ${toAirport?.city || to}`;
   block.appendChild(title);
-  
-  // Subtitle - use authorable subtitle if provided
-  if (config.subtitle) {
-    const subtitle = createElement('p', 'flight-results-subtitle');
-    subtitle.textContent = config.subtitle;
-    block.appendChild(subtitle);
-  }
-  
+
   // Disclaimer
   const disclaimer = createElement('p', 'flight-results-disclaimer');
   disclaimer.textContent = 'Presented fares are per passenger, including fees and taxes. Additional services and amenities may vary per flight or change in time.';
   block.appendChild(disclaimer);
   
-  // Results list
   const resultsList = createElement('div', 'flight-results-list');
-  
-  // Use authorable images if provided (already an array from readImageReferences)
-  const authorableImages = Array.isArray(config.flightImages) ? config.flightImages : [];
-  
   const dateForDataLayer = date != null ? (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(date) ? date.slice(0, 10) : (() => { try { const d = new Date(date); return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10); } catch (e) { return ''; } })()) : '';
-  flights.forEach((flight, index) => {
+  flights.forEach((flight) => {
     const flightWithDate = { ...flight, date: dateForDataLayer, flightLength: flight.flightLength || '' };
     const flightCard = createElement('div', 'flight-card');
-    
+
     const imageContainer = createElement('div', 'flight-card-image');
     const image = createElement('img', '');
-    // Use authorable image if available, otherwise use flight's default image
-    image.src = authorableImages[index] || flight.image;
+    image.src = flight.image || '';
     image.alt = `${flight.toName} destination`;
     imageContainer.appendChild(image);
     
@@ -547,105 +453,6 @@ function handleFlightSelect(flight) {
   // Restore full dataLayer for checkout/confirmation before redirect
   updateDataLayerWithSelectedFlights(fullFlight);
   setTimeout(() => { window.location.href = getCheckoutPath(); }, 2000);
-}
-
-// Create a default flight item structure in the DOM (editable)
-function createDefaultFlightItem(block) {
-  const defaultFlightData = SAMPLE_FLIGHTS['JFK-TQO'][0];
-  
-  // Create a flight item div with the structure that Universal Editor expects
-  const flightItem = document.createElement('div');
-  flightItem.setAttribute('data-aue-model', 'flight');
-  flightItem.setAttribute('data-aue-type', 'component');
-  
-  // Create field divs in the order expected by the model
-  // Mark them as fields (not separate components) to prevent showing in content tree
-  // 0: image
-  const imageDiv = createElement('div', '');
-  imageDiv.setAttribute('data-aue-prop', 'image');
-  imageDiv.setAttribute('data-aue-type', 'reference'); // Mark as field type
-  const imageLink = createElement('a', '');
-  imageLink.href = defaultFlightData.image;
-  imageLink.textContent = defaultFlightData.image;
-  imageDiv.appendChild(imageLink);
-  flightItem.appendChild(imageDiv);
-  
-  // 1: from
-  const fromDiv = createElement('div', '');
-  fromDiv.setAttribute('data-aue-prop', 'from');
-  fromDiv.setAttribute('data-aue-type', 'text');
-  const fromP = createElement('p', '');
-  fromP.textContent = defaultFlightData.from;
-  fromDiv.appendChild(fromP);
-  flightItem.appendChild(fromDiv);
-  
-  // 2: fromName
-  const fromNameDiv = createElement('div', '');
-  fromNameDiv.setAttribute('data-aue-prop', 'fromName');
-  fromNameDiv.setAttribute('data-aue-type', 'text');
-  const fromNameP = createElement('p', '');
-  fromNameP.textContent = defaultFlightData.fromName;
-  fromNameDiv.appendChild(fromNameP);
-  flightItem.appendChild(fromNameDiv);
-  
-  // 3: to
-  const toDiv = createElement('div', '');
-  toDiv.setAttribute('data-aue-prop', 'to');
-  toDiv.setAttribute('data-aue-type', 'text');
-  const toP = createElement('p', '');
-  toP.textContent = defaultFlightData.to;
-  toDiv.appendChild(toP);
-  flightItem.appendChild(toDiv);
-  
-  // 4: toName
-  const toNameDiv = createElement('div', '');
-  toNameDiv.setAttribute('data-aue-prop', 'toName');
-  toNameDiv.setAttribute('data-aue-type', 'text');
-  const toNameP = createElement('p', '');
-  toNameP.textContent = defaultFlightData.toName;
-  toNameDiv.appendChild(toNameP);
-  flightItem.appendChild(toNameDiv);
-  
-  // 5: departureTime
-  const departureTimeDiv = createElement('div', '');
-  departureTimeDiv.setAttribute('data-aue-prop', 'departureTime');
-  departureTimeDiv.setAttribute('data-aue-type', 'text');
-  const departureTimeP = createElement('p', '');
-  departureTimeP.textContent = defaultFlightData.departureTime;
-  departureTimeDiv.appendChild(departureTimeP);
-  flightItem.appendChild(departureTimeDiv);
-  
-  // 6: arrivalTime
-  const arrivalTimeDiv = createElement('div', '');
-  arrivalTimeDiv.setAttribute('data-aue-prop', 'arrivalTime');
-  arrivalTimeDiv.setAttribute('data-aue-type', 'text');
-  const arrivalTimeP = createElement('p', '');
-  arrivalTimeP.textContent = defaultFlightData.arrivalTime;
-  arrivalTimeDiv.appendChild(arrivalTimeP);
-  flightItem.appendChild(arrivalTimeDiv);
-  
-  // 7: price
-  const priceDiv = createElement('div', '');
-  priceDiv.setAttribute('data-aue-prop', 'price');
-  priceDiv.setAttribute('data-aue-type', 'text');
-  const priceP = createElement('p', '');
-  priceP.textContent = defaultFlightData.price.toString();
-  priceDiv.appendChild(priceP);
-  flightItem.appendChild(priceDiv);
-  
-  // 8: class
-  const classDiv = createElement('div', '');
-  classDiv.setAttribute('data-aue-prop', 'class');
-  classDiv.setAttribute('data-aue-type', 'text');
-  const classP = createElement('p', '');
-  classP.textContent = defaultFlightData.class;
-  classDiv.appendChild(classP);
-  flightItem.appendChild(classDiv);
-  
-  // Append to block (after config divs)
-  block.appendChild(flightItem);
-  
-  return flightItem;
 }
 
 // Check if a flight item is completely empty (no data at all)
@@ -1219,69 +1026,46 @@ export default async function decorate(block) {
   }
   block.dataset.decorated = 'true';
   
-  // Read configuration from block children (authorable fields)
-  // Block structure: each field is in a div > div > p structure
-  const readConfigValue = (index) => {
-    const div = block.querySelector(`:scope > div:nth-child(${index}) > div`);
-    return div?.textContent?.trim() || '';
-  };
-  
-  // Read all authorable fields
-  // For multi-reference fields like images, read all links/anchors
-  const readImageReferences = () => {
-    const imageDiv = block.querySelector(':scope > div:nth-child(7)');
-    if (!imageDiv) return [];
-    const links = imageDiv.querySelectorAll('a');
-    return Array.from(links).map(link => link.href || link.textContent?.trim()).filter(Boolean);
-  };
-  
-  const config = {
-    title: readConfigValue(1),
-    subtitle: readConfigValue(2),
-    defaultFrom: readConfigValue(3),
-    defaultTo: readConfigValue(4),
-    defaultDate: readConfigValue(5),
-    apiUrl: readConfigValue(6),
-    flightImages: readImageReferences(),
-  };
-  
   const urlParams = new URLSearchParams(window.location.search);
   const urlDate = urlParams.get('date');
-  const { from: resolvedFrom, to: resolvedTo } = resolveFromAndTo();
-  
-  // Preserve block structure for authoring
+  const resolved = resolveFromAndTo();
+
   block.className = 'flights';
-  
-  // Hide config divs but keep them for Universal Editor
-  // Only hide if they have data-aue-prop attributes matching the flights block model
-  Array.from(block.children).forEach((child, index) => {
-    // Check if this is a config field (flights block model fields)
-    const isConfigField = child.getAttribute('data-aue-prop') === 'title' ||
-                         child.getAttribute('data-aue-prop') === 'subtitle' ||
-                         child.getAttribute('data-aue-prop') === 'defaultFrom' ||
-                         child.getAttribute('data-aue-prop') === 'defaultTo' ||
-                         child.getAttribute('data-aue-prop') === 'defaultDate' ||
-                         child.getAttribute('data-aue-prop') === 'apiUrl' ||
-                         child.getAttribute('data-aue-prop') === 'flightImages' ||
-                         (index < 7 && !child.getAttribute('data-aue-model')); // First 7 children without flight model are config
-    if (isConfigField) {
-      child.style.display = 'none';
-    }
-  });
-  
-  // When both from and to are available (URL params, or datalayer + destinations path), fetch from GraphQL
-  if (resolvedFrom && resolvedTo) {
-    const route = `${resolvedFrom}-${resolvedTo}`;
+
+  // Country-based: path contains /en/destinations/<country> → fetch flights to all airports in that country (multiple GraphQL calls)
+  if (resolved.from && resolved.destinationCodes?.length) {
     let flights = [];
     try {
-      flights = await fetchFlightsFromGraphQL(resolvedFrom, resolvedTo, config);
+      const results = await Promise.all(
+        resolved.destinationCodes.map((toCode) => fetchFlightsFromGraphQL(resolved.from, toCode))
+      );
+      flights = results.flat();
+    } catch (_) {
+      // keep flights = []
+    }
+    const toLabel = resolved.country || resolved.destinationCodes.join(', ');
+    displayFlightResults(flights, resolved.from, toLabel, urlDate);
+    addBookNowBar(block);
+    const selectedFromUrl = getSelectedFlights();
+    if (selectedFromUrl.length > 0) {
+      updateDataLayerWithSelectedFlights(selectedFromUrl[selectedFromUrl.length - 1]);
+    }
+    return;
+  }
+
+  // Single from/to (URL params)
+  if (resolved.from && resolved.to) {
+    const route = `${resolved.from}-${resolved.to}`;
+    let flights = [];
+    try {
+      flights = await fetchFlightsFromGraphQL(resolved.from, resolved.to);
     } catch (_) {
       // keep flights = []
     }
     if (flights.length === 0) {
       flights = SAMPLE_FLIGHTS[route] || [];
     }
-    displayFlightResults(flights, resolvedFrom, resolvedTo, urlDate || config.defaultDate, config);
+    displayFlightResults(flights, resolved.from, resolved.to, urlDate);
     addBookNowBar(block);
     const selectedFromUrl = getSelectedFlights();
     if (selectedFromUrl.length > 0) {
@@ -1293,31 +1077,14 @@ export default async function decorate(block) {
   // No from/to resolved - check for authorable flight items first
   const children = Array.from(block.children);
   const flightItems = [];
-  const processedItems = new Set(); // Track processed items to prevent duplicates
-  
-  // Find flight items - check all children (not just after index 7)
-  // First, identify config divs (flights block model fields)
-  const configIndices = new Set();
-  children.forEach((child, index) => {
-    const isConfigField = child.getAttribute('data-aue-prop') === 'title' ||
-                         child.getAttribute('data-aue-prop') === 'subtitle' ||
-                         child.getAttribute('data-aue-prop') === 'defaultFrom' ||
-                         child.getAttribute('data-aue-prop') === 'defaultTo' ||
-                         child.getAttribute('data-aue-prop') === 'defaultDate' ||
-                         child.getAttribute('data-aue-prop') === 'apiUrl' ||
-                         child.getAttribute('data-aue-prop') === 'flightImages';
-    if (isConfigField || (index < 7 && !child.getAttribute('data-aue-model'))) {
-      configIndices.add(index);
-    }
-  });
-  
-  // Find flight items - check all children
+  const processedItems = new Set();
+
   for (let i = 0; i < children.length; i++) {
-    // Skip config fields
-    if (configIndices.has(i)) {
+    const child = children[i];
+    // Skip first 7 placeholder rows unless they are explicitly flight items
+    if (i < 7 && child.getAttribute('data-aue-model') !== 'flight') {
       continue;
     }
-    const child = children[i];
     
     // Skip if it's a display element (already processed)
     if (child.classList.contains('flight-results-header') || 
@@ -1381,27 +1148,6 @@ export default async function decorate(block) {
   }
   
   // Display authorable flight items
-  // Add title and subtitle if configured
-  if (config.title || config.subtitle) {
-    const titleSection = createElement('div', 'flight-results-header');
-    if (config.title) {
-      const title = createElement('h2', 'flight-results-title');
-      title.textContent = config.title;
-      titleSection.appendChild(title);
-    }
-    if (config.subtitle) {
-      const subtitle = createElement('p', 'flight-results-subtitle');
-      subtitle.textContent = config.subtitle;
-      titleSection.appendChild(subtitle);
-    }
-    // Insert before first flight item
-    if (flightItems[0]) {
-      block.insertBefore(titleSection, flightItems[0]);
-    } else {
-      block.appendChild(titleSection);
-    }
-  }
-  
   // Add disclaimer
   const disclaimer = createElement('p', 'flight-results-disclaimer');
   disclaimer.textContent = 'Presented fares are per passenger, including fees and taxes. Additional services and amenities may vary per flight or change in time.';

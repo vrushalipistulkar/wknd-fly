@@ -116,11 +116,5 @@
       "wizard",
       "range"
     ]
-  },
-  {
-    "id": "flights",
-    "components": [
-      "flight"
-    ]
   }
 ]
