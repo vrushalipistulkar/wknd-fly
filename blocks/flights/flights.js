@@ -1,8 +1,11 @@
 // Flights Block - Displays flight search results (GraphQL CF + fallback to sample data)
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
 
-const AUTHOR_GRAPHQL_BASE = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list';
-const PUBLISH_GRAPHQL_BASE = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/flight-details-list';
+const AUTHOR_GRAPHQL_BASE_For_Search = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list';
+const PUBLISH_GRAPHQL_BASE_For_Search = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/flight-details-list';
+
+const AUTHOR_GRAPHQL_BASE_For_Destination = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list-for-destination-page';
+const PUBLISH_GRAPHQL_BASE_For_Destination = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/flight-details-list-for-destination-page';
 
 // Sample airport data (shared with flight-search)
 const AIRPORTS = [
@@ -30,10 +33,16 @@ function slugify(str) {
   return (str || '').toLowerCase().replace(/[- ]/g, '');
 }
 
-// If path contains /en/destinations/<slug>, return matching country name from AIRPORTS, else null
-function getCountryFromPath() {
+// True when path is /en/destinations/<slug> (destination page: no from/to, fetch by destination)
+function isDestinationPage() {
   const pathname = (typeof window !== 'undefined' && window.location.pathname) || '';
-  if (!pathname.includes('/en/destinations/')) return null;
+  return pathname.includes('/en/destinations/');
+}
+
+// If on destination page: return country name from path (slug matched to AIRPORTS countries), else null
+function getDestinationFromPath() {
+  if (!isDestinationPage()) return null;
+  const pathname = (typeof window !== 'undefined' && window.location.pathname) || '';
   const match = pathname.match(/\/en\/destinations\/([^/]+)/i);
   if (!match) return null;
   const slug = slugify(match[1] || '');
@@ -43,26 +52,16 @@ function getCountryFromPath() {
   return country ?? null;
 }
 
-// If path contains /en/destinations/<country-slug>, return all airport codes for that country
-function getDestinationCodesFromPath() {
-  const country = getCountryFromPath();
-  if (!country) return [];
-  return AIRPORTS.filter((a) => a.country === country).map((a) => a.code);
-}
-
+// Resolve from/to only when not on a destination page (destination page has no from/to)
 function resolveFromAndTo() {
   const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  let from = (urlParams.get('from') || '').trim().toUpperCase();
-  let to = (urlParams.get('to') || '').trim().toUpperCase();
+  const from = (urlParams.get('from') || '').trim().toUpperCase();
+  const to = (urlParams.get('to') || '').trim().toUpperCase();
   if (from && to) return { from, to };
   if (!from && typeof window !== 'undefined' && window.getDataLayerProperty) {
     const dlFrom = window.getDataLayerProperty('from');
-    from = (dlFrom && String(dlFrom).trim().toUpperCase()) || '';
-  }
-  if (!to) {
-    const destinationCodes = getDestinationCodesFromPath();
-    const country = getCountryFromPath();
-    if (destinationCodes.length > 0) return { from, destinationCodes, country: country ?? undefined };
+    const resolvedFrom = (dlFrom && String(dlFrom).trim().toUpperCase()) || '';
+    if (resolvedFrom && to) return { from: resolvedFrom, to };
   }
   return { from, to };
 }
@@ -140,8 +139,8 @@ async function fetchFlightsFromGraphQL(from, to) {
   const isAuthor = isAuthorEnvironment();
   try {
     const url = isAuthor
-      ? `${AUTHOR_GRAPHQL_BASE};from=${encodeURIComponent(fromCode)};to=${encodeURIComponent(toCode)};ts=${Date.now()}`
-      : `${PUBLISH_GRAPHQL_BASE}?environment=p159983-e1710854&endpoint=flight-details-list&from=${encodeURIComponent(fromCode)}&to=${encodeURIComponent(toCode)}&time=${Date.now()}`;
+      ? `${AUTHOR_GRAPHQL_BASE_For_Search};from=${encodeURIComponent(fromCode)};to=${encodeURIComponent(toCode)};ts=${Date.now()}`
+      : `${PUBLISH_GRAPHQL_BASE_For_Search}?environment=p159983-e1710854&endpoint=flight-details-list&from=${encodeURIComponent(fromCode)}&to=${encodeURIComponent(toCode)}&time=${Date.now()}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -157,6 +156,33 @@ async function fetchFlightsFromGraphQL(from, to) {
     return items.map((it) => mapGraphQLItemToFlight(it, isAuthor));
   } catch (e) {
     console.warn('Flights GraphQL fetch failed:', e);
+    return [];
+  }
+}
+
+async function fetchFlightsForDestination(destination) {
+  if (!destination || !String(destination).trim()) return [];
+  const isAuthor = isAuthorEnvironment();
+  const encoded = encodeURIComponent(String(destination).trim());
+  try {
+    const url = isAuthor
+      ? `${AUTHOR_GRAPHQL_BASE_For_Destination};destination=${encoded};ts=${Date.now()}`
+      : `${PUBLISH_GRAPHQL_BASE_For_Destination}?environment=p159983-e1710854&endpoint=flight-details-list-for-destination-page&destination=${encoded}&time=${Date.now()}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) return [];
+    const payload = await response.json();
+    if (payload?.errors?.length) return [];
+    const items =
+      payload?.data?.flightDetailsListForDestinationPage?.items ||
+      payload?.data?.flight_details_list_for_destination_page?.items ||
+      payload?.data?.flightDetailsList?.items ||
+      [];
+    return items.map((it) => mapGraphQLItemToFlight(it, isAuthor));
+  } catch (e) {
+    console.warn('Destination flights GraphQL fetch failed:', e);
     return [];
   }
 }
@@ -283,19 +309,26 @@ function displayFlightResults(flights, from, to, date) {
   
   if (flights.length === 0) {
     const noResults = createElement('div', 'flight-no-results');
+    const msg = from
+      ? `No flights found for ${from} to ${to}${date ? ` on ${formatDate(date)}` : ''}`
+      : `No flights found to ${to}${date ? ` on ${formatDate(date)}` : ''}`;
     noResults.innerHTML = `
-      <p>No flights found for ${from} to ${to}${date ? ` on ${formatDate(date)}` : ''}</p>
+      <p>${msg}</p>
       <p>Please try different airports or dates.</p>
       <a href="/" class="flight-back-link">← Back to Search</a>
     `;
     block.appendChild(noResults);
     return;
   }
-  
-  const fromAirport = AIRPORTS.find((a) => a.code === from);
-  const toAirport = AIRPORTS.find((a) => a.code === to);
+
   const title = createElement('h2', 'flight-results-title');
-  title.textContent = `One-Way connections from ${fromAirport?.city || from} to ${toAirport?.city || to}`;
+  if (from) {
+    const fromAirport = AIRPORTS.find((a) => a.code === from);
+    const toAirport = AIRPORTS.find((a) => a.code === to);
+    title.textContent = `One-Way connections from ${fromAirport?.city || from} to ${toAirport?.city || to}`;
+  } else {
+    title.textContent = `Flights to ${to}`;
+  }
   block.appendChild(title);
 
   // Disclaimer
@@ -912,112 +945,6 @@ function processFlightItem(row) {
   row._updateDisplay = updateDisplay;
 }
 
-// Read flight item from a block child (row)
-function readFlightItem(row) {
-  // Each flight item has fields in this order (matching model definition):
-  // 0: image (reference - link, img, or picture)
-  // 1: from (text)
-  // 2: fromName (text)
-  // 3: to (text)
-  // 4: toName (text)
-  // 5: departureTime (text)
-  // 6: arrivalTime (text)
-  // 7: price (text)
-  // 8: class (text)
-  
-  const readField = (index, fieldName) => {
-    // Try to find by data attribute first (more reliable)
-    if (fieldName) {
-      const byDataAttr = row.querySelector(`[data-aue-prop="${fieldName}"]`);
-      if (byDataAttr) {
-        // Check for p tag
-        const p = byDataAttr.querySelector('p');
-        if (p) return p.textContent?.trim() || '';
-        // Check for nested div
-        const nestedDiv = byDataAttr.querySelector('div');
-        if (nestedDiv) return nestedDiv.textContent?.trim() || '';
-        // Check direct text content
-        return byDataAttr.textContent?.trim() || '';
-      }
-    }
-    
-    // Fallback to index-based reading
-    const div = row.querySelector(`:scope > div:nth-child(${index + 1})`);
-    if (div) {
-      // Check for p tag first (common structure)
-      const p = div.querySelector('p');
-      if (p) return p.textContent?.trim() || '';
-      // Check for nested div
-      const nestedDiv = div.querySelector('div');
-      if (nestedDiv) return nestedDiv.textContent?.trim() || '';
-      // Check direct text content
-      return div.textContent?.trim() || '';
-    }
-    return '';
-  };
-  
-  // Read image - can be a link, img tag, or picture element
-  // Try data attribute first
-  let imageDiv = row.querySelector('[data-aue-prop="image"]');
-  if (!imageDiv) {
-    // Fallback to first child
-    imageDiv = row.querySelector(':scope > div:nth-child(1)');
-  }
-  
-  let imageUrl = '';
-  if (imageDiv) {
-    // Check for picture > img
-    const picture = imageDiv.querySelector('picture');
-    if (picture) {
-      const img = picture.querySelector('img');
-      if (img) {
-        imageUrl = img.src || img.getAttribute('data-src') || '';
-      }
-    } else {
-      // Check for direct img tag
-      const img = imageDiv.querySelector('img');
-      if (img) {
-        imageUrl = img.src || img.getAttribute('data-src') || '';
-      } else {
-        // Check for link
-        const link = imageDiv.querySelector('a');
-        if (link) {
-          imageUrl = link.href || link.textContent?.trim() || '';
-        } else {
-          // Check for text content (path)
-          const div = imageDiv.querySelector('div');
-          const text = div?.textContent?.trim() || imageDiv.textContent?.trim() || '';
-          if (text) {
-            imageUrl = text;
-          }
-        }
-      }
-    }
-  }
-  
-  const flight = {
-    id: `flight-${Date.now()}-${Math.random()}`,
-    image: imageUrl,
-    from: readField(1, 'from'),
-    fromName: readField(2, 'fromName'),
-    to: readField(3, 'to'),
-    toName: readField(4, 'toName'),
-    departureTime: readField(5, 'departureTime'),
-    arrivalTime: readField(6, 'arrivalTime'),
-    price: parseFloat(readField(7, 'price')) || 0,
-    class: readField(8, 'class'),
-  };
-  
-  // Debug logging to help troubleshoot
-  console.log('Flight item read:', flight);
-  
-  // Only return flight if it has required fields
-  if (flight.from && flight.to) {
-    return flight;
-  }
-  return null;
-}
-
 // Main decorate function
 export default async function decorate(block) {
   // Prevent multiple executions
@@ -1032,19 +959,18 @@ export default async function decorate(block) {
 
   block.className = 'flights';
 
-  // Country-based: path contains /en/destinations/<country> → fetch flights to all airports in that country (multiple GraphQL calls)
-  if (resolved.from && resolved.destinationCodes?.length) {
+  // Destination page: path contains /en/destinations/ — no from/to; get destination from URL, one GraphQL call
+  if (isDestinationPage()) {
+    const destination = getDestinationFromPath();
     let flights = [];
-    try {
-      const results = await Promise.all(
-        resolved.destinationCodes.map((toCode) => fetchFlightsFromGraphQL(resolved.from, toCode))
-      );
-      flights = results.flat();
-    } catch (_) {
-      // keep flights = []
+    if (destination) {
+      try {
+        flights = await fetchFlightsForDestination(destination);
+      } catch (_) {
+        // keep flights = []
+      }
     }
-    const toLabel = resolved.country || resolved.destinationCodes.join(', ');
-    displayFlightResults(flights, resolved.from, toLabel, urlDate);
+    displayFlightResults(flights, '', destination || 'destination', urlDate);
     addBookNowBar(block);
     const selectedFromUrl = getSelectedFlights();
     if (selectedFromUrl.length > 0) {
@@ -1053,7 +979,7 @@ export default async function decorate(block) {
     return;
   }
 
-  // Single from/to (URL params)
+  // Search page: from and to always present (URL params or datalayer)
   if (resolved.from && resolved.to) {
     const route = `${resolved.from}-${resolved.to}`;
     let flights = [];
@@ -1074,100 +1000,7 @@ export default async function decorate(block) {
     return;
   }
 
-  // No from/to resolved - check for authorable flight items first
-  const children = Array.from(block.children);
-  const flightItems = [];
-  const processedItems = new Set();
-
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i];
-    // Skip first 7 placeholder rows unless they are explicitly flight items
-    if (i < 7 && child.getAttribute('data-aue-model') !== 'flight') {
-      continue;
-    }
-    
-    // Skip if it's a display element (already processed)
-    if (child.classList.contains('flight-results-header') || 
-        child.classList.contains('flight-results-disclaimer') ||
-        child.classList.contains('flight-results-list') ||
-        child.classList.contains('flight-card-image') ||
-        child.classList.contains('flight-card-details') ||
-        child.classList.contains('flight-card-price')) {
-      continue;
-    }
-    
-    // Skip if already processed
-    if (processedItems.has(child)) {
-      continue;
-    }
-    
-    // Check if this child is a flight item
-    const hasFlightModel = child.getAttribute('data-aue-model') === 'flight';
-    const hasFlightData = child.querySelector('[data-aue-prop="from"]') || 
-                         child.querySelector('[data-aue-prop="to"]') ||
-                         child.querySelector('p[data-aue-prop="from"]') ||
-                         child.querySelector('p[data-aue-prop="to"]');
-    
-    // Only process if it's explicitly marked as a flight item OR has flight data fields
-    // Don't process based on child count alone as config fields might match
-    if (hasFlightModel || hasFlightData) {
-      // Skip if already processed (has flight-card class and display elements)
-      if (child.classList.contains('flight-card') && 
-          (child.querySelector('.flight-card-image') || child.querySelector('.flight-card-details'))) {
-        // Already processed, just add to list if not already added
-        if (!flightItems.includes(child)) {
-          flightItems.push(child);
-        }
-        processedItems.add(child);
-        continue;
-      }
-      
-      // Ensure it has the model attribute for UE
-      if (!child.getAttribute('data-aue-model')) {
-        child.setAttribute('data-aue-model', 'flight');
-        child.setAttribute('data-aue-type', 'component');
-      }
-      
-      // This is a flight item - process it directly (which will ensure defaults only if empty)
-      // Only process if not already in the list
-      if (!flightItems.includes(child)) {
-        processFlightItem(child);
-        flightItems.push(child);
-        processedItems.add(child);
-      }
-    }
-  }
-  
-  // Don't create default flight - flights should only appear when explicitly added in UE
-  // If no flight items exist, just show empty state or nothing
-  
-  // Only display UI elements if there are flight items
-  if (flightItems.length === 0) {
-    // No flights - just return, don't show anything
-    return;
-  }
-  
-  // Display authorable flight items
-  // Add disclaimer
-  const disclaimer = createElement('p', 'flight-results-disclaimer');
-  disclaimer.textContent = 'Presented fares are per passenger, including fees and taxes. Additional services and amenities may vary per flight or change in time.';
-  if (flightItems[0]) {
-    block.insertBefore(disclaimer, flightItems[0]);
-  } else {
-    block.appendChild(disclaimer);
-  }
-  
-  // Wrap flight items in a container (move them)
-  const resultsList = createElement('div', 'flight-results-list');
-  flightItems.forEach(item => {
-    resultsList.appendChild(item);
-  });
-  block.appendChild(resultsList);
-  addBookNowBar(block);
-  // Sync datalayer when user has previously selected flights (authorable flight items path)
-  const selected = getSelectedFlights();
-  if (selected.length > 0) {
-    updateDataLayerWithSelectedFlights(selected[selected.length - 1]);
-  }
+  // No from/to resolved and not destination page — nothing to show
+  return;
 }
 
