@@ -32,6 +32,14 @@ export default function decorate(block) {
     const imageStyleParagraph = row.querySelector('p[data-aue-prop="imagestyle"]') || row.querySelector('[data-aue-prop="imagestyle"]');
     const imageStyle = imageStyleParagraph?.textContent?.trim() || '';
 
+    // Background color: hex value from UE (e.g. #ffffff or f5f5f5)
+    const bgColorEl = row.querySelector('p[data-aue-prop="backgroundcolor"]') || row.querySelector('[data-aue-prop="backgroundcolor"]');
+    const bgColorRaw = bgColorEl?.textContent?.trim() || '';
+    if (bgColorRaw) {
+      const hex = /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(bgColorRaw) ? `#${bgColorRaw}` : bgColorRaw;
+      li.style.backgroundColor = hex;
+    }
+
     const getCell = (idx) => (row.children[idx]?.querySelector?.('p')?.textContent?.trim()
       || row.children[idx]?.textContent?.trim() || '').toString();
     const link = getCell(5);

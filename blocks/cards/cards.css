@@ -586,6 +586,7 @@
 .cards [data-aue-prop="data"],
 .cards [data-aue-prop="alignment"],
 .cards [data-aue-prop="textUppercase"],
+.cards [data-aue-prop="backgroundcolor"],
 .cards [data-aue-prop="backgroundColor"],
 .cards [data-aue-prop="backgroundColorOnHover"],
 .cards [data-aue-prop="textColor"],
@@ -601,6 +602,7 @@
 .cards div:has(> [data-aue-prop="formId"]),
 .cards div:has(> [data-aue-prop="data"]),
 .cards div:has(> [data-aue-prop="alignment"]),
+.cards div:has(> [data-aue-prop="backgroundcolor"]),
 .cards div:has(> [data-aue-prop="customStyles"]) {
   display: none !important;
 }

@@ -25,6 +25,11 @@ export default function decorate(block) {
   const layoutStyle = config.herolayout ?? rowVal(4) ?? 'overlay';
   const ctaStyle = config.ctastyle ?? rowVal(5) ?? 'default';
   const backgroundStyle = config.backgroundstyle ?? rowVal(6) ?? 'default';
+  const backgroundColor = (config.backgroundcolor ?? block.querySelector('[data-aue-prop="backgroundcolor"]')?.textContent?.trim() ?? '').toString().trim();
+  if (backgroundColor) {
+    const hex = /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(backgroundColor) ? `#${backgroundColor}` : backgroundColor;
+    block.style.backgroundColor = hex;
+  }
 
   if (layoutStyle) {
     block.classList.add(`${layoutStyle}`);

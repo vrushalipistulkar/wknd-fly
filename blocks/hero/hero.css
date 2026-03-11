@@ -593,6 +593,7 @@ picture {
 .hero [data-aue-prop="color"],
 .hero [data-aue-prop="isfullwidth"],
 .hero [data-aue-prop="textUppercase"],
+.hero [data-aue-prop="backgroundcolor"],
 .hero [data-aue-prop="backgroundColor"],
 .hero [data-aue-prop="backgroundColorOnHover"],
 .hero [data-aue-prop="textColor"],
@@ -612,6 +613,7 @@ picture {
 .hero div:has(> [data-aue-prop="height"]),
 .hero div:has(> [data-aue-prop="color"]),
 .hero div:has(> [data-aue-prop="isfullwidth"]),
+.hero div:has(> [data-aue-prop="backgroundcolor"]),
 .hero div:has(> [data-aue-prop="customStyles"]) {
   display: none !important;
 }

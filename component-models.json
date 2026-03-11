@@ -605,7 +605,14 @@
           { "name": "Right", "value": "right" }
         ]
       },
- 
+      {
+        "component": "text",
+        "name": "backgroundcolor",
+        "label": "Background Color",
+        "value": "",
+        "valueType": "string",
+        "description": "Hex value, e.g. #ffffff or f5f5f5"
+      },
       {
         "component": "text",
         "name": "buttoneventtype",
@@ -1098,6 +1105,14 @@
             "value": "theme-light"
           }
         ]
+      },
+      {
+        "component": "text",
+        "name": "backgroundcolor",
+        "label": "Background Color",
+        "value": "",
+        "valueType": "string",
+        "description": "Hex value, e.g. #ffffff or f5f5f5"
       },
       {
         "component": "select",
