@@ -32,20 +32,38 @@ export default function decorate(block) {
     const imageStyleParagraph = row.querySelector('p[data-aue-prop="imagestyle"]') || row.querySelector('[data-aue-prop="imagestyle"]');
     const imageStyle = imageStyleParagraph?.textContent?.trim() || '';
 
-    // Background color: hex value from UE (e.g. #ffffff or f5f5f5)
-    const bgColorEl = row.querySelector('p[data-aue-prop="backgroundcolor"]') || row.querySelector('[data-aue-prop="backgroundcolor"]');
-    const bgColorRaw = bgColorEl?.textContent?.trim() || '';
-    if (bgColorRaw) {
-      const hex = /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(bgColorRaw) ? `#${bgColorRaw}` : bgColorRaw;
-      li.style.backgroundColor = hex;
-    }
-
     const getCell = (idx) => (row.children[idx]?.querySelector?.('p')?.textContent?.trim()
       || row.children[idx]?.textContent?.trim() || '').toString();
+
+    /** True if string looks like a hex color (#xxx, #xxxxxx, or 3/6 hex chars). */
+    const isHexColor = (s) => {
+      const t = String(s).trim();
+      if (!t) return false;
+      if (t.startsWith('#')) return /^#[0-9a-fA-F]{3}$|^#[0-9a-fA-F]{6}$/.test(t);
+      return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t);
+    };
+    const toHex = (s) => {
+      const t = String(s).trim();
+      if (t.startsWith('#')) return t;
+      return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t) ? `#${t}` : t;
+    };
+
+    // Background color: from data-aue-prop, or from any cell/link that contains only a hex value (UE may store it in link or button field)
+    let bgColorRaw = (row.querySelector('p[data-aue-prop="backgroundcolor"]') || row.querySelector('[data-aue-prop="backgroundcolor"]'))?.textContent?.trim() || '';
+    if (!bgColorRaw) {
+      const hexLink = row.querySelector('a[href^="#"]');
+      if (hexLink && isHexColor(hexLink.getAttribute('href') || '')) bgColorRaw = (hexLink.getAttribute('href') || '').replace(/^#/, '');
+      if (!bgColorRaw && isHexColor(getCell(8))) bgColorRaw = getCell(8).trim();
+      if (!bgColorRaw && isHexColor(getCell(5))) bgColorRaw = getCell(5).trim().replace(/^#/, '');
+    }
+    if (bgColorRaw) {
+      li.style.backgroundColor = toHex(bgColorRaw);
+    }
+
     const link = getCell(5);
     const selectable = getCell(6);
     const alignment = (getCell(7) || 'left').toLowerCase();
-    const buttonEventType = getCell(8);
+    let buttonEventType = getCell(8);
     const buttonWebhookUrl = getCell(9);
     const buttonFormId = getCell(10);
     const buttonData = getCell(11);
@@ -57,7 +75,7 @@ export default function decorate(block) {
 
     li.classList.add(`cards-card--alignment-${alignment}`);
     if (selectable.toLowerCase() === 'true') li.classList.add('cards-card--selectable');
-    if (link) {
+    if (link && !isHexColor(link)) {
       li.dataset.sectionLink = link;
       li.addEventListener('click', async () => {
         const siteName = await getSiteName();
@@ -124,7 +142,8 @@ export default function decorate(block) {
 
     const ctaLink = li.querySelector('p.button-container a, .button-container a');
     if (ctaLink) {
-      if (buttonEventType) ctaLink.dataset.buttonEventType = buttonEventType;
+      if (ctaLink.dataset.buttonEventType && isHexColor(ctaLink.dataset.buttonEventType)) delete ctaLink.dataset.buttonEventType;
+      if (buttonEventType && !isHexColor(buttonEventType)) ctaLink.dataset.buttonEventType = buttonEventType;
       if (buttonWebhookUrl) ctaLink.dataset.buttonWebhookUrl = buttonWebhookUrl;
       if (buttonFormId) ctaLink.dataset.buttonFormId = buttonFormId;
       if (buttonData) ctaLink.dataset.buttonData = buttonData;
