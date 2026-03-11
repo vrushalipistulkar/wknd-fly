@@ -7365,6 +7365,36 @@
   },
   {
     "id": "flights",
-    "fields": []
+    "fields": [
+      {
+        "component": "text",
+        "name": "buttoneventtype",
+        "label": "Button Event Type",
+        "value": "",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "buttonwebhookurl",
+        "label": "Button Webhook URL",
+        "value": "",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "buttonformid",
+        "label": "Button Form ID",
+        "value": "",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "buttondata",
+        "label": "Button Data",
+        "value": "",
+        "valueType": "string",
+        "description": "Comma-separated key,value pairs"
+      }
+    ]
   }
 ]

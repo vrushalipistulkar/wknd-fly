@@ -1,3 +1,4 @@
+import { dispatchCustomEvent } from '../../scripts/custom-events.js';
 /**
  * Checkout block – consolidates selected flights from the flights block and shows Trip Summary.
  * Selected flights are stored in sessionStorage (wknd-fly-selected-flights) when user clicks Select on any flight.
@@ -308,7 +309,7 @@ function renderTripTotal(sidebar, total) {
     <div class="checkout-total-row"><span>Taxes</span><span>included</span></div>
     <hr class="checkout-total-divider">
     <div class="checkout-total-row checkout-total-final"><span>Total</span><span>${formatPrice(flightsTotal)}</span></div>
-    <button type="button" class="checkout-confirm-btn">Confirm Purchase</button>
+    <button type="button" class="checkout-confirm-btn" data-button-webhook-url="${config.buttonwebhookurl}" data-button-form-id="${config.buttonformid}" data-button-data="${config.buttondata}">Confirm Purchase</button>
   `;
   const confirmBtn = box.querySelector('.checkout-confirm-btn');
   if (confirmBtn) {
@@ -403,7 +404,7 @@ function renderTripTotal(sidebar, total) {
           bookingUpdates.date = (typeof window.getDataLayerDate === 'function' ? (window.getDataLayerDate(dateVal) || todayISO) : (dateVal || todayISO)) || '';
         }
         window.updateDataLayer(bookingUpdates, true);
-        document.dispatchEvent(new CustomEvent('flight.booking', { bubbles: true }));
+        dispatchCustomEvent(config.buttoneventtype);
       }
       setTimeout(() => { window.location.href = getConfirmationPath()+ '?order='+orderId; }, 2000);
     };
@@ -441,6 +442,7 @@ function fillFormDataFromDataLayer(block) {
 }
 
 export default async function decorate(block) {
+  const config = block.dataset;
   block.classList.add('checkout-block');
   const wrapper = document.createElement('div');
   wrapper.className = 'checkout-wrapper';
@@ -467,7 +469,7 @@ export default async function decorate(block) {
 
   const refreshTripAndTotal = () => {
     const total = renderTripSummary(tripContainer, refreshTripAndTotal);
-    renderTripTotal(sidebar, total);
+    renderTripTotal(sidebar, total, config);
   };
 
   refreshTripAndTotal();
