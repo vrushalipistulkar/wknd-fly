@@ -58,6 +58,7 @@ export default function decorate(block) {
     }
     if (bgColorRaw) {
       li.style.backgroundColor = toHex(bgColorRaw);
+      li.classList.add('cards-card--custom-bg');
     }
 
     const link = getCell(5);

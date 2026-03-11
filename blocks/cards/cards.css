@@ -139,6 +139,11 @@
   box-sizing: border-box;
   margin: 0;
 }
+
+/* When card has custom background color, body must not cover it */
+.cards > ul > li.cards-card--custom-bg .cards-card-body {
+  background-color: transparent;
+}
 .cards > ul > li .cards-card-body h1 {
   margin: 0;
   font-size: 26px;
