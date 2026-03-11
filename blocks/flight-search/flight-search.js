@@ -12,11 +12,11 @@ const AIRPORTS = [
   { code: 'ORD', city: 'Chicago', country: 'United States' },
   { code: 'LAS', city: 'Las Vegas', country: 'United States' },
   { code: 'JFK', city: 'New York', country: 'United States' },
+  { code: 'SFR', city: 'San Francisco', country: 'United States' },
   { code: 'MBJ', city: 'Montego Bay', country: 'Jamaica' },
   { code: 'AMS', city: 'Amsterdam', country: 'Netherlands' },
   { code: 'TXL', city: 'Berlin', country: 'Germany' },
   { code: 'HND', city: 'Tokyo', country: 'Japan' },
-  { code: 'SFR', city: 'San Francisco', country: 'United States' },
   { code: 'CUN', city: 'Cancún', country: 'Mexico' },
   { code: 'DEL', city: 'Delhi', country: 'India' },
   { code: 'TQO', city: 'Tulum', country: 'Mexico' },
@@ -314,20 +314,19 @@ function updateFlightSearchDataLayer() {
   const businessClass = document.getElementById('business-class');
   const travellingChildren = document.getElementById('travelling-children');
   const dateVal = dateInput?.value?.trim();
+  const todayYYYYMMDD = typeof window.getDataLayerDate === 'function'
+    ? window.getDataLayerDate(new Date().toISOString().slice(0, 10))
+    : '';
   const updates = {
     from: fromInput?.value?.trim() || '',
     to: toInput?.value?.trim() || '',
+    date: (typeof window.getDataLayerDate === 'function' ? (window.getDataLayerDate(dateVal) || todayYYYYMMDD) : (dateVal || todayYYYYMMDD)) || '',
     options: {
       businessTrip: (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(businessTrip?.checked) : (businessTrip?.checked ? 'y' : 'n')),
       businessClass: (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(businessClass?.checked) : (businessClass?.checked ? 'y' : 'n')),
       familyTrip: (typeof window.getDataLayerYesNo === 'function' ? window.getDataLayerYesNo(travellingChildren?.checked) : (travellingChildren?.checked ? 'y' : 'n')),
     },
   };
-  if (dateVal) {
-    updates.date = typeof window.getDataLayerDate === 'function'
-      ? (window.getDataLayerDate(dateVal) || dateVal)
-      : dateVal;
-  }
   window.updateDataLayer(updates, true);
 }
 
