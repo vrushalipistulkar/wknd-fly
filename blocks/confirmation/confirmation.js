@@ -14,6 +14,18 @@ function getBookingData() {
   }
 }
 
+function resetCartFromDataLayer() {
+  if (typeof window.updateDataLayer !== 'function') return;
+  window.updateDataLayer({
+    cart: {
+      products: {},
+      productCount: 0,
+      subTotal: 0,
+      total: 0,
+    },
+  }, true);
+}
+
 function renderConfirmation(block, data) {
   if (!data) {
     block.innerHTML = `
@@ -73,5 +85,7 @@ function renderConfirmation(block, data) {
 export default async function decorate(block) {
   const data = getBookingData();
   renderConfirmation(block, data);
-  // DataLayer update and flight.booking event are done on checkout (Confirm Purchase); confirmation only renders the ticket.
+  sessionStorage.removeItem('wknd-fly-selected-flights');
+  sessionStorage.removeItem('wknd-fly-booking-confirmation');
+  resetCartFromDataLayer();
 }
