@@ -522,6 +522,9 @@ function decorateSections(main) {
         }
       });
       sectionMeta.parentNode.remove();
+
+      // Section background image from UE field
+      applySectionBackgroundImage(section, meta['sec-bg-image']);
     }
     applySectionItemWidths(section);
   });
@@ -633,6 +636,24 @@ function applySectionItemWidths(section) {
   }
 }
 
+function applySectionBackgroundImage(section, bgImagePath) {
+  const existing = section.querySelector('picture.section-bg');
+  if (existing) existing.remove();
+  section.classList.remove('section-has-bg');
+  const path = (bgImagePath ?? section.dataset.secBgImage ?? '').toString().trim();
+  if (path) {
+    section.dataset.secBgImage = path;
+    const picture = createOptimizedPicture(path, '', false, [{ width: '2000' }]);
+    picture.classList.add('section-bg');
+    const img = picture.querySelector('img');
+    if (img) img.classList.add('sec-img');
+    section.classList.add('section-has-bg');
+    section.prepend(picture);
+  } else {
+    delete section.dataset.secBgImage;
+  }
+}
+
 function setupSectionItemWidthsUE() {
   const handler = (event) => {
     const resource = event.detail?.request?.target?.resource;
@@ -645,10 +666,18 @@ function setupSectionItemWidthsUE() {
         section.dataset.secItemWidths = String(val);
         applySectionItemWidths(section);
       }
+      const bgVal = content['sec-bg-image'] ?? content.secBgImage ?? '';
+      applySectionBackgroundImage(section, bgVal);
     }
-    if (event.type === 'aue:content-patch' && event.detail?.patch?.name === 'sec-item-widths') {
-      section.dataset.secItemWidths = String(event.detail.patch.value || '');
-      applySectionItemWidths(section);
+    if (event.type === 'aue:content-patch') {
+      const patch = event.detail?.patch;
+      if (patch?.name === 'sec-item-widths') {
+        section.dataset.secItemWidths = String(patch.value || '');
+        applySectionItemWidths(section);
+      }
+      if (patch?.name === 'sec-bg-image') {
+        applySectionBackgroundImage(section, patch.value ?? '');
+      }
     }
   };
   document.body.addEventListener('aue:content-details', handler);

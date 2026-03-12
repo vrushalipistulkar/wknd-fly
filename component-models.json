@@ -449,6 +449,14 @@
         ]
       },
       {
+        "component": "reference",
+        "valueType": "string",
+        "name": "sec-bg-image",
+        "label": "Section background image",
+        "description": "Image used as the section background.",
+        "multi": false
+      },
+      {
         "component": "boolean",
         "valueType": "boolean",
         "name": "sec-full-width",
