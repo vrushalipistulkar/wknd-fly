@@ -525,6 +525,8 @@ function decorateSections(main) {
 
       // Section background image from UE field
       applySectionBackgroundImage(section, meta['sec-bg-image']);
+      // Section text color from UE field (same pattern as hero)
+      applySectionTextColor(section, meta['sec-color']);
     }
     applySectionItemWidths(section);
   });
@@ -642,6 +644,30 @@ function applySectionItemWidths(section) {
   }
 }
 
+function applySectionTextColor(section, colorValue) {
+  const isHexColor = (s) => {
+    const t = String(s).trim();
+    if (!t) return false;
+    if (t.startsWith('#')) return /^#[0-9a-fA-F]{3}$|^#[0-9a-fA-F]{6}$/.test(t);
+    return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t);
+  };
+  const toHex = (s) => {
+    const t = String(s).trim();
+    if (t.startsWith('#')) return t;
+    return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t) ? `#${t}` : t;
+  };
+  const raw = (colorValue ?? section.dataset.secColor ?? '').toString().trim();
+  section.classList.remove('section--custom-text-color');
+  section.style.removeProperty('--section-text-color');
+  if (raw && isHexColor(raw)) {
+    section.style.setProperty('--section-text-color', toHex(raw));
+    section.classList.add('section--custom-text-color');
+    section.dataset.secColor = raw;
+  } else {
+    delete section.dataset.secColor;
+  }
+}
+
 function applySectionBackgroundImage(section, bgImagePath) {
   const existing = section.querySelector('picture.section-bg');
   if (existing) existing.remove();
@@ -674,6 +700,8 @@ function setupSectionItemWidthsUE() {
       }
       const bgVal = content['sec-bg-image'] ?? content.secBgImage ?? '';
       applySectionBackgroundImage(section, bgVal);
+      const colorVal = content['sec-color'] ?? content.secColor ?? '';
+      applySectionTextColor(section, colorVal);
     }
     if (event.type === 'aue:content-patch') {
       const patch = event.detail?.patch;
@@ -683,6 +711,9 @@ function setupSectionItemWidthsUE() {
       }
       if (patch?.name === 'sec-bg-image') {
         applySectionBackgroundImage(section, patch.value ?? '');
+      }
+      if (patch?.name === 'sec-color') {
+        applySectionTextColor(section, patch.value ?? '');
       }
     }
   };
