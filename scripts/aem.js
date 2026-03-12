@@ -527,6 +527,8 @@ function decorateSections(main) {
       applySectionBackgroundImage(section, meta['sec-bg-image']);
       // Section text color from UE field (same pattern as hero; key may be sec-color or section-text-color from label)
       applySectionTextColor(section, meta['sec-color'] ?? meta['section-text-color']);
+      // Custom class (same as hero Custom Styles)
+      applySectionCustomClass(section, meta['sec-custom-styles'] ?? meta['custom-class']);
     }
     applySectionItemWidths(section);
   });
@@ -644,6 +646,24 @@ function applySectionItemWidths(section) {
   }
 }
 
+/**
+ * Applies custom class(es) to section from UE field (same as hero Custom Styles). Space-separated for multiple.
+ * @param {Element} section The section element
+ * @param {string} value Class name(s), space-separated
+ */
+function applySectionCustomClass(section, value) {
+  const prev = (section.dataset.secCustomStyles ?? '').trim();
+  if (prev) {
+    prev.split(/\s+/).filter(Boolean).forEach((c) => section.classList.remove(c));
+  }
+  delete section.dataset.secCustomStyles;
+  const next = (value ?? '').toString().trim();
+  if (next) {
+    section.dataset.secCustomStyles = next;
+    next.split(/\s+/).filter(Boolean).forEach((c) => section.classList.add(c));
+  }
+}
+
 function applySectionTextColor(section, colorValue) {
   const isHexColor = (s) => {
     const t = String(s).trim();
@@ -702,6 +722,8 @@ function setupSectionItemWidthsUE() {
       applySectionBackgroundImage(section, bgVal);
       const colorVal = content['sec-color'] ?? content.secColor ?? content['section-text-color'] ?? content.sectionTextColor ?? '';
       applySectionTextColor(section, colorVal);
+      const customClassVal = content['sec-custom-styles'] ?? content.secCustomStyles ?? content['custom-class'] ?? content.customClass ?? '';
+      applySectionCustomClass(section, customClassVal);
     }
     if (event.type === 'aue:content-patch') {
       const patch = event.detail?.patch;
@@ -714,6 +736,9 @@ function setupSectionItemWidthsUE() {
       }
       if (patch?.name === 'sec-color') {
         applySectionTextColor(section, patch.value ?? '');
+      }
+      if (patch?.name === 'sec-custom-styles') {
+        applySectionCustomClass(section, patch.value ?? '');
       }
     }
   };
