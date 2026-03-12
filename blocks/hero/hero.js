@@ -86,8 +86,7 @@ export default function decorate(block) {
     block.style.height = heightVal;
   }
 
-  /* Text color: read from data-aue-prop first; only apply when value looks like a color (hex), not e.g. "350px" */
-  const textColorRaw = (config.color ?? block.querySelector('[data-aue-prop="color"]')?.textContent?.trim() ?? rowVal(11))?.toString?.().trim() ?? '';
+  /* Helpers: detect hex color so we don't use it as section link or other fields */
   const isHexColor = (s) => {
     const t = String(s).trim();
     if (!t) return false;
@@ -99,14 +98,25 @@ export default function decorate(block) {
     if (t.startsWith('#')) return t;
     return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t) ? `#${t}` : t;
   };
+
+  /* Text color: from data-aue-prop, or from a[href="#..."] (UE often stores color in link field), or row */
+  let textColorRaw = (config.color ?? block.querySelector('[data-aue-prop="color"]')?.textContent?.trim() ?? rowVal(11))?.toString?.().trim() ?? '';
+  if (!textColorRaw) {
+    const hexLink = block.querySelector('a[href^="#"]');
+    const href = hexLink?.getAttribute('href')?.trim() || '';
+    if (href && isHexColor(href)) textColorRaw = href.replace(/^#/, '');
+  }
   if (textColorRaw && isHexColor(textColorRaw)) {
     block.style.setProperty('--hero-text-color', toHex(textColorRaw));
     block.classList.add('hero--custom-text-color');
   }
 
-  const sectionLink = (config.link ?? rowVal(12)) && String(config.link ?? rowVal(12)).trim();
-  if (sectionLink) {
-    block.dataset.sectionLink = sectionLink;
+  /* Section link: do not use when value is a hex color (UE may put Text Color in Link field) */
+  const sectionLinkRaw = (config.link ?? rowVal(12)) && String(config.link ?? rowVal(12)).trim();
+  if (sectionLinkRaw && isHexColor(sectionLinkRaw)) {
+    delete block.dataset.sectionLink;
+  } else if (sectionLinkRaw) {
+    block.dataset.sectionLink = sectionLinkRaw;
   }
 
   const ctaLink = block.querySelector('p.button-container a, .button-container a');
