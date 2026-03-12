@@ -525,8 +525,8 @@ function decorateSections(main) {
 
       // Section background image from UE field
       applySectionBackgroundImage(section, meta['sec-bg-image']);
-      // Section text color from UE field (same pattern as hero)
-      applySectionTextColor(section, meta['sec-color']);
+      // Section text color from UE field (same pattern as hero; key may be sec-color or section-text-color from label)
+      applySectionTextColor(section, meta['sec-color'] ?? meta['section-text-color']);
     }
     applySectionItemWidths(section);
   });
@@ -656,7 +656,7 @@ function applySectionTextColor(section, colorValue) {
     if (t.startsWith('#')) return t;
     return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t) ? `#${t}` : t;
   };
-  const raw = (colorValue ?? section.dataset.secColor ?? '').toString().trim();
+  const raw = (colorValue ?? section.dataset.secColor ?? section.dataset.sectionTextColor ?? '').toString().trim();
   section.classList.remove('section--custom-text-color');
   section.style.removeProperty('--section-text-color');
   if (raw && isHexColor(raw)) {
@@ -700,7 +700,7 @@ function setupSectionItemWidthsUE() {
       }
       const bgVal = content['sec-bg-image'] ?? content.secBgImage ?? '';
       applySectionBackgroundImage(section, bgVal);
-      const colorVal = content['sec-color'] ?? content.secColor ?? '';
+      const colorVal = content['sec-color'] ?? content.secColor ?? content['section-text-color'] ?? content.sectionTextColor ?? '';
       applySectionTextColor(section, colorVal);
     }
     if (event.type === 'aue:content-patch') {
