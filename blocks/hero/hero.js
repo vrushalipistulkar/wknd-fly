@@ -67,9 +67,9 @@ export default function decorate(block) {
     if (index >= 6) row.style.display = 'none';
   });
 
-  /* Banner-like: alignment, vertical alignment, full width – from config, row DOM */
-  const alignment = (config.alignment ?? rowVal(7) ?? 'center').toString().toLowerCase();
-  block.classList.add(`hero--alignment-${alignment}`);
+  /* Banner-like: alignment, vertical alignment, full width – from config, data-aue-prop, or row DOM */
+  const alignment = (config.alignment ?? block.querySelector('[data-aue-prop="alignment"]')?.textContent?.trim() ?? rowVal(7) ?? 'center').toString().toLowerCase();
+  if (alignment) block.classList.add(`hero--alignment-${alignment}`);
 
   const verticalAlignment = (config.verticalalignment ?? rowVal(8) ?? 'middle').toString().toLowerCase();
   block.classList.add(`hero--verticalalignment-${verticalAlignment}`);
@@ -79,15 +79,29 @@ export default function decorate(block) {
     block.classList.add('hero--fullwidth');
   }
 
-  let heightVal = (config.height ?? rowVal(10))?.toString?.()?.trim();
+  /* Height: read from data-aue-prop first so UE value is used regardless of row order */
+  let heightVal = (config.height ?? block.querySelector('[data-aue-prop="height"]')?.textContent?.trim() ?? rowVal(10))?.toString?.()?.trim();
   if (heightVal) {
     if (/^\d+$/.test(heightVal)) heightVal = `${heightVal}px`;
     block.style.height = heightVal;
   }
 
-  const textColor = (config.color ?? rowVal(11))?.toString?.()?.trim();
-  if (textColor) {
-    block.classList.add(`hero--custom-text-color-${textColor}`);
+  /* Text color: read from data-aue-prop first; only apply when value looks like a color (hex), not e.g. "350px" */
+  const textColorRaw = (config.color ?? block.querySelector('[data-aue-prop="color"]')?.textContent?.trim() ?? rowVal(11))?.toString?.().trim() ?? '';
+  const isHexColor = (s) => {
+    const t = String(s).trim();
+    if (!t) return false;
+    if (t.startsWith('#')) return /^#[0-9a-fA-F]{3}$|^#[0-9a-fA-F]{6}$/.test(t);
+    return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t);
+  };
+  const toHex = (s) => {
+    const t = String(s).trim();
+    if (t.startsWith('#')) return t;
+    return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(t) ? `#${t}` : t;
+  };
+  if (textColorRaw && isHexColor(textColorRaw)) {
+    block.style.setProperty('--hero-text-color', toHex(textColorRaw));
+    block.classList.add('hero--custom-text-color');
   }
 
   const sectionLink = (config.link ?? rowVal(12)) && String(config.link ?? rowVal(12)).trim();
