@@ -83,7 +83,7 @@ export default function decorate(block) {
   let heightVal = (config.height ?? block.querySelector('[data-aue-prop="height"]')?.textContent?.trim() ?? rowVal(10))?.toString?.()?.trim();
   if (heightVal) {
     if (/^\d+$/.test(heightVal)) heightVal = `${heightVal}px`;
-    block.style.height = heightVal;
+    block.style.minHeight = heightVal;
   }
 
   /* Helpers: detect hex color so we don't use it as section link or other fields */
