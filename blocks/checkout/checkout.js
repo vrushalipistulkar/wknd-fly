@@ -205,9 +205,9 @@ function updateDataLayerFromCheckoutForm(block) {
     extraLuggage: v('upgrade-luggage') ?? false,
     upgradeWithPoints: yesNo(v('upgrade-points')),
     travelPreferences: {
-      seat: v('seat') || '',
-      seatSection: v('section') || '',
-      meal: v('meal') || '',
+      seat: v('seat') || 'noPreference',
+      seatSection: v('section') || 'noPreference',
+      meal: v('meal') || 'regularMeal',
     },
     person: {
       name: {
@@ -215,7 +215,7 @@ function updateDataLayerFromCheckoutForm(block) {
         middleName: v('middleName') || '',
         lastName: v('lastName') || '',
       },
-      gender: v('gender') || '',
+      gender: v('gender') || 'not_specified',
       birthDate: v('birthDate') || '',
       isMember: yesNo(v('wknd-club')),
     },
