@@ -1,6 +1,7 @@
 // Flights Block - Displays flight search results (GraphQL CF + fallback to sample data)
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
 import { readBlockConfig } from '../../scripts/aem.js';
+import { dispatchCustomEvent } from '../../scripts/custom-events.js';
 
 const AUTHOR_GRAPHQL_BASE_For_Search = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list';
 const PUBLISH_GRAPHQL_BASE_For_Search = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/flight-details-list';
@@ -496,10 +497,15 @@ function handleFlightSelect(flight) {
   addFlightToTrip(fullFlight);
   // Set minimal dataLayer so Launch builds working flight.selection XDM (only from, to, cart; no extra reservation/reservationSearch fields)
   updateDataLayerMinimalForFlightSelection(fullFlight);
-  document.dispatchEvent(new CustomEvent('flight.selected', { bubbles: true }));
-  // Restore full dataLayer for checkout/confirmation before redirect
-  updateDataLayerWithSelectedFlights(fullFlight);
-  setTimeout(() => { window.location.href = getCheckoutPath(); }, 2000);
+  if(selectButton?.dataset?.buttonEventType) {
+    dispatchCustomEvent(selectButton.dataset.buttonEventType);
+    updateDataLayerWithSelectedFlights(fullFlight);
+    setTimeout(() => { window.location.href = getCheckoutPath(); }, 2000);
+  } else {
+    document.dispatchEvent(new CustomEvent('flight.selected', { bubbles: true }));
+    updateDataLayerWithSelectedFlights(fullFlight);
+    setTimeout(() => { window.location.href = getCheckoutPath(); }, 2000);
+  }
 }
 
 // Check if a flight item is completely empty (no data at all)
