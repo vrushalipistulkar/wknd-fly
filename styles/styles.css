@@ -1216,6 +1216,16 @@ table {
   padding: 1.5rem;
   padding-bottom: 30px;
   box-sizing: border-box;
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#consentModal.consent-visible {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Ensure modal card stays centered when Launch adds wrapper divs */

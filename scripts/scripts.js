@@ -376,6 +376,66 @@ async function loadLazy(doc) {
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
+  ensureConsentModalHandled();
+}
+
+const CONSENT_MODAL_KEY = 'consentModalDecision';
+
+function getStoredConsentDecision() {
+  try {
+    return sessionStorage.getItem(CONSENT_MODAL_KEY);
+  } catch (error) {
+    return null;
+  }
+}
+
+function storeConsentDecision(value) {
+  if (!value) return;
+  try {
+    sessionStorage.setItem(CONSENT_MODAL_KEY, value);
+  } catch (error) {
+    // ignore
+  }
+}
+
+function hideConsentModal(modal) {
+  if (!modal) return;
+  modal.classList.remove('consent-visible');
+}
+
+function initConsentModal() {
+  const modal = document.getElementById('consentModal');
+  if (!modal || modal.dataset.consentInitialized === 'true') return false;
+  const stored = getStoredConsentDecision();
+  if (stored) {
+    hideConsentModal(modal);
+    modal.dataset.consentInitialized = 'true';
+    return true;
+  }
+  modal.classList.add('consent-visible');
+  const attachHandler = (id, decisionValue) => {
+    const button = modal.querySelector(`#${id}`);
+    if (!button) return;
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      storeConsentDecision(decisionValue);
+      hideConsentModal(modal);
+    });
+  };
+  attachHandler('allow', 'allow');
+  attachHandler('disable', 'disable');
+  modal.dataset.consentInitialized = 'true';
+  return true;
+}
+
+function ensureConsentModalHandled() {
+  if (initConsentModal()) return;
+  const observer = new MutationObserver(() => {
+    if (initConsentModal()) {
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 function isDMOpenAPIUrl(src) {
