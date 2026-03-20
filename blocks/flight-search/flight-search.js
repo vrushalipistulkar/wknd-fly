@@ -399,7 +399,16 @@ export default async function decorate(block) {
     if (buttonData && String(buttonData).trim()) searchButton.dataset.buttonData = String(buttonData).trim();
   }
 
-  const flightDropdownContentFragmentPath = config.flightdropdowncontentfragment ?? config['flightdropdowncontentfragment'];
+  let flightDropdownContentFragmentPath = null;
+  if(config.flightdropdowncontentfragment || config['flightdropdowncontentfragment']) {
+    flightDropdownContentFragmentPath = config.flightdropdowncontentfragment ?? config['flightdropdowncontentfragment'];
+    if(isAuthorEnvironment()) {
+      flightDropdownContentFragmentPath = flightDropdownContentFragmentPath.replace(window.location.origin, '');
+      flightDropdownContentFragmentPath = flightDropdownContentFragmentPath.replace('.html', '');
+    } else {
+      flightDropdownContentFragmentPath = flightDropdownContentFragmentPath.replace(window.location.origin, '');
+    }
+  }
 
   // Setup click outside handler
   setupClickOutside();

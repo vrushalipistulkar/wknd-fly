@@ -570,8 +570,27 @@ function isFlightItemEmpty(row) {
 // Main decorate function
 export default async function decorate(block) {
   const config = readBlockConfig(block) || {};
-  const flightDropdownContentFragmentPath = config.flightdropdowncontentfragment ?? config['flightdropdowncontentfragment'];
-  const flightListContentFragmentPath = config.flightlistcontentfragment ?? config['flightlistcontentfragment'];
+
+  let flightDropdownContentFragmentPath = null;
+  if(config.flightdropdowncontentfragment || config['flightdropdowncontentfragment']) {
+    flightDropdownContentFragmentPath = config.flightdropdowncontentfragment ?? config['flightdropdowncontentfragment'];
+    if(isAuthorEnvironment()) {
+      flightDropdownContentFragmentPath = flightDropdownContentFragmentPath.replace(window.location.origin, '');
+      flightDropdownContentFragmentPath = flightDropdownContentFragmentPath.replace('.html', '');
+    } else {
+      flightDropdownContentFragmentPath = flightDropdownContentFragmentPath.replace(window.location.origin, '');
+    }
+  }
+
+  let flightListContentFragmentPath = null;
+  if(config.flightlistcontentfragment || config['flightlistcontentfragment']) {
+    flightListContentFragmentPath = config.flightlistcontentfragment ?? config['flightlistcontentfragment'];
+    if(isAuthorEnvironment()) {
+      flightListContentFragmentPath = flightListContentFragmentPath.replace(window.location.origin, '');
+      flightListContentFragmentPath = flightListContentFragmentPath.replace('.html', '');
+    } else {
+      flightListContentFragmentPath = flightListContentFragmentPath.replace(window.location.origin, '');
+  }
 
   // Apply button config as data attributes on the Search button (for analytics/webhooks)
   const selectButton = block.querySelector('.flight-select-button');
