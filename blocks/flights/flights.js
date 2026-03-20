@@ -590,6 +590,7 @@ export default async function decorate(block) {
       flightListContentFragmentPath = flightListContentFragmentPath.replace('.html', '');
     } else {
       flightListContentFragmentPath = flightListContentFragmentPath.replace(window.location.origin, '');
+    }
   }
 
   // Apply button config as data attributes on the Search button (for analytics/webhooks)
@@ -662,4 +663,3 @@ export default async function decorate(block) {
   // No from/to resolved and not destination page — nothing to show
   return;
 }
-
