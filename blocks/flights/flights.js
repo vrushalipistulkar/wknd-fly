@@ -595,13 +595,14 @@ export default async function decorate(block) {
 
   // Apply button config as data attributes on the Search button (for analytics/webhooks)
   let selectButton = {};
-  const eventType = config.buttoneventtype ?? config['button-event-type'];
+  selectButton.dataset = {};
+  const eventType = config.buttoneventtype;
   if (eventType && String(eventType).trim()) selectButton.dataset.buttonEventType = String(eventType).trim();
-  const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
+  const webhookUrl = config.buttonwebhookurl;
   if (webhookUrl && String(webhookUrl).trim()) selectButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
-  const formId = config.buttonformid ?? config['button-form-id'];
+  const formId = config.buttonformid;
   if (formId && String(formId).trim()) selectButton.dataset.buttonFormId = String(formId).trim();
-  const buttonData = config.buttondata ?? config['button-data'];
+  const buttonData = config.buttondata;
   if (buttonData && String(buttonData).trim()) selectButton.dataset.buttonData = String(buttonData).trim();
 
   const urlParams = new URLSearchParams(window.location.search);
