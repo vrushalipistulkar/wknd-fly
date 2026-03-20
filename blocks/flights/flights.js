@@ -1,5 +1,6 @@
 // Flights Block - Displays flight search results (GraphQL CF + fallback to sample data)
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
+import { readBlockConfig } from '../../scripts/aem.js';
 
 const AUTHOR_GRAPHQL_BASE_For_Search = 'https://author-p159983-e1710854.adobeaemcloud.com/graphql/execute.json/wknd-fly/flight-details-list';
 const PUBLISH_GRAPHQL_BASE_For_Search = 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/flight-details-list';
@@ -568,6 +569,23 @@ function isFlightItemEmpty(row) {
 
 // Main decorate function
 export default async function decorate(block) {
+  const config = readBlockConfig(block) || {};
+  const flightDropdownContentFragmentPath = config.flightdropdowncontentfragment ?? config['flightdropdowncontentfragment'];
+  const flightListContentFragmentPath = config.flightlistcontentfragment ?? config['flightlistcontentfragment'];
+
+  // Apply button config as data attributes on the Search button (for analytics/webhooks)
+  const selectButton = block.querySelector('.flight-select-button');
+  if (selectButton) {
+    const eventType = config.buttoneventtype ?? config['button-event-type'];
+    if (eventType && String(eventType).trim()) selectButton.dataset.buttonEventType = String(eventType).trim();
+    const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
+    if (webhookUrl && String(webhookUrl).trim()) selectButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
+    const formId = config.buttonformid ?? config['button-form-id'];
+    if (formId && String(formId).trim()) selectButton.dataset.buttonFormId = String(formId).trim();
+    const buttonData = config.buttondata ?? config['button-data'];
+    if (buttonData && String(buttonData).trim()) selectButton.dataset.buttonData = String(buttonData).trim();
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const urlDate = urlParams.get('date');
   const resolved = resolveFromAndTo();

@@ -7338,9 +7338,9 @@
     "fields": [
       {
         "component": "aem-content-fragment",
-        "name": "flightdetailsfragment",
-        "label": "Flight Details Content Fragment",
-        "description": "Select the CF folder containing flight details content fragments",
+        "name": "flightdropdowncontentfragment",
+        "label": "Flight Dropdown Content Fragment",
+        "description": "Select the CF containing the flight dropdown content",
         "valueType": "string",
         "validation": {
           "rootPath": "/content/dam"
@@ -7388,6 +7388,26 @@
   {
     "id": "flights",
     "fields": [
+      {
+        "component": "aem-content-fragment",
+        "name": "flightdropdowncontentfragment",
+        "label": "Flight Dropdown Content Fragment",
+        "description": "Select the CF containing the flight dropdown content fragment",
+        "valueType": "string",
+        "validation": {
+          "rootPath": "/content/dam"
+        }
+      },
+      {
+        "component": "aem-content-fragment",
+        "name": "flightlistcontentfragment",
+        "label": "Flight List Content Fragment",
+        "description": "Select the CF containing the flight list content",
+        "valueType": "string",
+        "validation": {
+          "rootPath": "/content/dam"
+        }
+      },
       {
         "component": "text",
         "name": "buttoneventtype",

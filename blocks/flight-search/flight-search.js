@@ -399,7 +399,7 @@ export default async function decorate(block) {
     if (buttonData && String(buttonData).trim()) searchButton.dataset.buttonData = String(buttonData).trim();
   }
 
-  const flightDetailsFragmentPath = config.flightdetailsfragment ?? config['flightdetailsfragment'];
+  const flightDropdownContentFragmentPath = config.flightdropdowncontentfragment ?? config['flightdropdowncontentfragment'];
 
   // Setup click outside handler
   setupClickOutside();
