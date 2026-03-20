@@ -594,17 +594,15 @@ export default async function decorate(block) {
   }
 
   // Apply button config as data attributes on the Search button (for analytics/webhooks)
-  const selectButton = block.querySelector('.flight-select-button');
-  if (selectButton) {
-    const eventType = config.buttoneventtype ?? config['button-event-type'];
-    if (eventType && String(eventType).trim()) selectButton.dataset.buttonEventType = String(eventType).trim();
-    const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
-    if (webhookUrl && String(webhookUrl).trim()) selectButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
-    const formId = config.buttonformid ?? config['button-form-id'];
-    if (formId && String(formId).trim()) selectButton.dataset.buttonFormId = String(formId).trim();
-    const buttonData = config.buttondata ?? config['button-data'];
-    if (buttonData && String(buttonData).trim()) selectButton.dataset.buttonData = String(buttonData).trim();
-  }
+  let selectButton = {};
+  const eventType = config.buttoneventtype ?? config['button-event-type'];
+  if (eventType && String(eventType).trim()) selectButton.dataset.buttonEventType = String(eventType).trim();
+  const webhookUrl = config.buttonwebhookurl ?? config['button-webhook-url'];
+  if (webhookUrl && String(webhookUrl).trim()) selectButton.dataset.buttonWebhookUrl = String(webhookUrl).trim();
+  const formId = config.buttonformid ?? config['button-form-id'];
+  if (formId && String(formId).trim()) selectButton.dataset.buttonFormId = String(formId).trim();
+  const buttonData = config.buttondata ?? config['button-data'];
+  if (buttonData && String(buttonData).trim()) selectButton.dataset.buttonData = String(buttonData).trim();
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlDate = urlParams.get('date');
