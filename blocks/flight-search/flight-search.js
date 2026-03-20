@@ -399,6 +399,8 @@ export default async function decorate(block) {
     if (buttonData && String(buttonData).trim()) searchButton.dataset.buttonData = String(buttonData).trim();
   }
 
+  const flightDetailsFragmentPath = config.flightdetailsfragment ?? config['flightdetailsfragment'];
+
   // Setup click outside handler
   setupClickOutside();
   // Update datalayer when user changes From/To dropdowns, date, or option checkboxes
