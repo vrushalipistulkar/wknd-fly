@@ -156,7 +156,7 @@ async function fetchFlightsFromGraphQL(from, to) {
   try {
     const url = isAuthor
       ? `${AUTHOR_GRAPHQL_BASE_For_Search};from=${encodeURIComponent(fromCode)};to=${encodeURIComponent(toCode)};ts=${Date.now()}`
-      : `${PUBLISH_GRAPHQL_BASE_For_Search}?environment=p159983-e1710854&endpoint=flight-details-list&from=${encodeURIComponent(fromCode)}&to=${encodeURIComponent(toCode)}&time=${Date.now()}`;
+      : `${PUBLISH_GRAPHQL_BASE_For_Search}?environment=p189874-e1977911&endpoint=flight-details-list&from=${encodeURIComponent(fromCode)}&to=${encodeURIComponent(toCode)}&time=${Date.now()}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -184,7 +184,7 @@ async function fetchFlightsForDestination(destination) {
   try {
     const url = isAuthor
       ? `${AUTHOR_GRAPHQL_BASE_For_Destination};to=${encoded};ts=${Date.now()}`
-      : `${PUBLISH_GRAPHQL_BASE_For_Destination}?environment=p159983-e1710854&endpoint=flight-details-list-for-destination-page&to=${encoded}&time=${Date.now()}`;
+      : `${PUBLISH_GRAPHQL_BASE_For_Destination}?environment=p189874-e1977911&endpoint=flight-details-list-for-destination-page&to=${encoded}&time=${Date.now()}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
