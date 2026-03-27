@@ -174,3 +174,5 @@ export async function initializeCustomEvents() {
     console.error("Error initializing custom events:", error);
   }
 }
+
+initializeCustomEvents();
